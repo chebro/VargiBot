@@ -8,4 +8,4 @@
 
 # Screenshot
 
-<img src="https://raw.githubusercontent.com/sravanth-chebrolu/VargiBot/master/task_0/VB_1004.png?token=AM6QPVAAB33INLOLRZRDSOK7SWYV6" width=750>
+<img src="https://raw.githubusercontent.com/sravanth-chebrolu/VargiBot/master/task_0/VB_1004.png?token=AM6QPVHLTZ7YDP63PODLMPC7UMRQM" width=750>
