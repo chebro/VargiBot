@@ -69,12 +69,15 @@ class SimpleActionClientTurtle:
         """
         rospy.loginfo("Status is : " + str(status))
         rospy.loginfo("Result is : " + str(result))
-        
-        # result_tuple = (result.final_x, result.final_y, result.final_theta)
+        split_result = str(result).split("\n")
+        final_x = split_result[0].split(": ")[1]
+        final_y = split_result[1].split(": ")[1]
+        final_theta = split_result[2].split(": ")[1]
+        send_result = '(' + final_x + ',' + final_y + ',' + final_theta + ')'
         goal_handle = self.send_mqtt_pub_goal("mqtt",
                                               "pub",
                                               self._config_mqtt_pub_topic,
-                                              str(result))
+                                              send_result)
         key = str(len(self._goal_handles))
         self._goal_handles[key] = goal_handle
         rospy.loginfo('Goal ' + key + ' Sent')

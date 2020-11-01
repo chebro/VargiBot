@@ -146,7 +146,14 @@ class IotRosBridgeActionServer:
                 if ret == 0:
                     rospy.loginfo("MQTT Publish Successful.")
                     result.flag_success = True
-                    iot.publish_message_to_spreadsheet(goal.message)
+                    msg_split = goal.message.split(",")
+                    result_x = msg_split[0].split("(")[1]
+                    result_y = msg_split[1]
+                    result_theta = msg_split[2].split(")")[0]
+                    rospy.logwarn('MESSAGE IMP: ' +result_x+result_y+result_theta)
+                    iot.publish_message_to_spreadsheet(turtle_x=result_x,
+                                                       turtle_y=result_y,
+                                                       turtle_theta=result_theta)
                 else:
                     rospy.logerr("MQTT Failed to Publish")
                     result.flag_success = False

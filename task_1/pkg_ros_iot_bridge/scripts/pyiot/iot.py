@@ -55,31 +55,23 @@ def mqtt_publish(arg_broker_url, arg_broker_port, arg_mqtt_topic, arg_mqtt_messa
     except:
         return -1
 
-def publish_message_to_spreadsheet(arg_message):
+def publish_message_to_spreadsheet(**kwargs):
     """
     -----------------  SPREADSHEET PUB -------------------
     """
-    split_result = arg_message.split("\n")
-    final_x = split_result[0].split(": ")[1]
-    final_y = split_result[1].split(": ")[1]
-    final_theta = split_result[2].split(": ")[1]
     url1 = "https://script.google.com/macros/s/AKfycbwQwrleLtrkgPW5I-lIMd8iMPDtO87bm0LpNpx5_Hb-QT9Gsvc/exec"
     url2 = "https://script.google.com/macros/s/AKfycbw850dk4moVgebU2GGe0PUQUvvg8jTpSjBQCawJt3_13vgujLk/exec"
-    params1 = {
-        "id": "Sheet1",
-        "turtle_x": final_x,
-        "turtle_y": final_y,
-        "turtle_theta": final_theta
-    }
-    params2 = {
-        "id":"task1",
-        "team_id":1004,
-        "unique_id":"CeAhsAGA",
-        "turtle_x":final_x,
-        "turtle_y":final_y,
-        "turtle_theta":final_theta
-    }
-    requests.get(url1, params=params1)
-    # requests.get(url2, params=params2)
+    
+    params1 = {"id": "Sheet1"}
+    params2 = {"id": "task1", "team_id": "VB_1004", "unique_id": "CeAhsAGA"}
+    for (key, val) in kwargs.items():
+        params1[key] = val
+        params2[key] = val
+    print params1
+    print params2
+    response1 = requests.get(url1, params=params1)
+    response2 = requests.get(url2, params=params2)
     print 'HTTP Requests Sent.'
+    print response1
+    print response2
     return

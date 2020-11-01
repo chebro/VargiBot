@@ -20,5 +20,6 @@
         <param name="cmd" value="$(find pkg_task1)/launch/shell_webpages_launch.sh"/>
     </node>
 
-	<node name="rosbag_record_turtle" pkg="rosbag" type="record" args="record -O $(find pkg_task1)/bag_files/$(arg rec_name) --chunksize=10  /		action_turtle/goal /action_turtle/result /action_ros_iot/goal /ros_iot_bridge/mqtt/sub /turtle1/cmd_vel /turtle1/pose" output="screen"/> 
 </launch>
+
+	<!-- <node name="rosbag_record_turtle" pkg="rosbag" type="record" args="record -O $(find pkg_task1)/bag_files/$(arg rec_name) --chunksize=10  /		action_turtle/goal /action_turtle/result /action_ros_iot/goal /ros_iot_bridge/mqtt/sub /turtle1/cmd_vel /turtle1/pose" output="screen"/>  -->
