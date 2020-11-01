@@ -60,18 +60,18 @@ def publish_message_to_spreadsheet(**kwargs):
     -----------------  SPREADSHEET PUB -------------------
     """
     url1 = "https://script.google.com/macros/s/AKfycbwQwrleLtrkgPW5I-lIMd8iMPDtO87bm0LpNpx5_Hb-QT9Gsvc/exec"
-    url2 = "https://script.google.com/macros/s/AKfycbw850dk4moVgebU2GGe0PUQUvvg8jTpSjBQCawJt3_13vgujLk/exec"
+    # url2 = "https://script.google.com/macros/s/AKfycbw850dk4moVgebU2GGe0PUQUvvg8jTpSjBQCawJt3_13vgujLk/exec"
     
     params1 = {"id": "Sheet1"}
-    params2 = {"id": "task1", "team_id": "VB_1004", "unique_id": "CeAhsAGA"}
+    # params2 = {"id": "task1", "team_id": "VB_1004", "unique_id": "CeAhsAGA"}
     for (key, val) in kwargs.items():
         params1[key] = val
         params2[key] = val
     print params1
-    print params2
+    # print params2
     response1 = requests.get(url1, params=params1)
-    response2 = requests.get(url2, params=params2)
+    # response2 = requests.get(url2, params=params2)
     print 'HTTP Requests Sent.'
     print response1
-    print response2
+    # print response2
     return
