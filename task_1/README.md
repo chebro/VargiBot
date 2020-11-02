@@ -6,4 +6,4 @@
 
 Check out the video on youtube:
 
-[![](https://img.youtube.com/vi/zbLAQjaag84/maxresdefault.jpg)](http://www.youtube.com/watch?v=zbLAQjaag84 "eYRC_VB_task_1")
+[![](https://i.imgur.com/MR2BXGj.png)](http://www.youtube.com/watch?v=zbLAQjaag84 "eYRC_VB_task_1")
