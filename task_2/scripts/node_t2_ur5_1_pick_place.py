@@ -5,7 +5,6 @@ ROS Node - Pick and Place Module - MoveIt
 """
 
 import sys
-import copy
 import math
 import rospy
 import moveit_commander
@@ -194,15 +193,16 @@ class Ur5Moveit:
         """
         rospy.wait_for_service('/eyrc/vb/ur5_1/activate_vacuum_gripper')
         try:
-            activate_vacuum_gripper = rospy.ServiceProxy('/eyrc/vb/ur5_1/activate_vacuum_gripper', vacuumGripper)
+            activate_vacuum_gripper = rospy.ServiceProxy('/eyrc/vb/ur5_1/activate_vacuum_gripper',
+                                                         vacuumGripper)
             resp1 = activate_vacuum_gripper(state)
             return resp1
         except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+            print "Service call failed: %s" + e
 
-    # Destructor
     def __del__(self):
         """
+        Destructor
         """
         moveit_commander.roscpp_shutdown()
         rospy.loginfo(
@@ -231,21 +231,17 @@ def main():
 
     ur5.add_box()
     ur5.set_joint_angles(lst_joint_angles_0)
-    rospy.sleep(2)
     ur5.activate_vacuum_gripper(True)
     ur5.attach_box()
     ur5.set_joint_angles(lst_joint_angles_1)
-    rospy.sleep(2)
     ur5.activate_vacuum_gripper(False)
     ur5.detach_box()
     ur5.remove_box()
     ur5.go_to_predefined_pose("allZeros")
     rospy.sleep(2)
-    rospy.sleep(1000)
 
     del ur5
 
 
 if __name__ == '__main__':
     main()
-
