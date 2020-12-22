@@ -1,0 +1,2 @@
+/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/./cmake.lock 97
+/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/lib/libROSLogicalCameraPlugin.so 2

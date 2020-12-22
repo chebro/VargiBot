@@ -1,0 +1,1 @@
+/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/ur_gazebo/lib/pkgconfig/ur_gazebo.pc
