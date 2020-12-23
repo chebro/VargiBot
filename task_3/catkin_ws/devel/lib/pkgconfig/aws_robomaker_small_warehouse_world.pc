@@ -1,1 +1,0 @@
-/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/aws_robomaker_small_warehouse_world/lib/pkgconfig/aws_robomaker_small_warehouse_world.pc

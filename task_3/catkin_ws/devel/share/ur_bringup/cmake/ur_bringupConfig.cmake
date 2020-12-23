@@ -1,1 +1,0 @@
-/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/ur_bringup/share/ur_bringup/cmake/ur_bringupConfig.cmake

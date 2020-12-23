@@ -1,8 +1,0 @@
-prefix=/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/gazebo_conveyor
-
-Name: gazebo_conveyor
-Description: Description of gazebo_conveyor
-Version: 1.0.0
-Cflags: -I/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/gazebo_conveyor/include
-Libs: -L${prefix}/lib 
-Requires: message_runtime std_srvs

@@ -1,1 +1,0 @@
-/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/gazebo_conveyor/share/roseus/ros/gazebo_conveyor/srv/ConveyorBeltControl.l

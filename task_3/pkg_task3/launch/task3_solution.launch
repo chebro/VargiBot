@@ -1,0 +1,22 @@
+<launch>
+    
+    <!-- Spawn Task-3 Models in Gazebo -->
+    <include file="$(find pkg_vb_sim)/launch/task3_simulation.launch" />
+    
+    <!-- Launch Moveit move_group Node -->
+    <include file = "$(find pkg_moveit_ur5_1)/launch/move_group.launch" /> 
+
+    <!-- Run RViz with Moveit! Plugin -->
+    <arg name="use_rviz" default="true" />
+
+    <include file="$(find pkg_moveit_ur5_1)/launch/moveit_rviz.launch" if="$(arg use_rviz)">
+        <arg name="rviz_config" value="$(find pkg_moveit_ur5_1)/launch/moveit.rviz"/>
+    </include>
+ 
+    <!-- Add Conveyor to Moveit! Planning Scene in RViz -->
+    <arg name="scene_file" default="$(find pkg_task3)/config/rviz/ur5_1_conveyor.scene"/> 
+    <node name = "moveit_publish_scene_from_text" pkg= "moveit_ros_planning" type = "moveit_publish_scene_from_text" args= "$(arg scene_file)"/>
+
+    <!-- Run Task-3 Sorting Packages ROS Node - this node is solely responisble for all subtasks -->
+    <node name= "node_t3_ur5_1_sorting_boxes" pkg= "pkg_task3" type="node_t3_ur5_1_sorting_boxes.py" output="screen"/>
+</launch>

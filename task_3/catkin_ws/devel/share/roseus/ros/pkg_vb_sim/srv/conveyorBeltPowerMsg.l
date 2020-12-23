@@ -1,1 +1,0 @@
-/home/mizumi/Studio/eYantra/task_3/catkin_ws/devel/.private/pkg_vb_sim/share/roseus/ros/pkg_vb_sim/srv/conveyorBeltPowerMsg.l
