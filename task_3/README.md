@@ -8,4 +8,4 @@ Used an UR5 Robotic Arm to pick blue, green and red packages from a conveyor bel
 
 Check out the video on youtube:
 
-[![](https://i.imgur.com/BQYjJLb.png)](https://www.youtube.com/watch?v=Fqsfb82him0 "eYRC_VB_task_3")
+[![](https://i.imgur.com/aOmKJR6.png)](https://www.youtube.com/watch?v=Fqsfb82him0 "eYRC_VB_task_3")
