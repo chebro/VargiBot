@@ -1,4 +1,4 @@
-# Task 2
+# Task 3
 
 #### Sorting packages using UR5 (UR5#1) in Gazebo.
 
