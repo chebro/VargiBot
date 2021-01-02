@@ -304,7 +304,7 @@ def main():
     ur5_2_home_pose = geometry_msgs.msg.Pose()
     ur5_2_home_pose.position.x = -0.8
     ur5_2_home_pose.position.y = 0
-    ur5_2_home_pose.position.z = 1 + vacuum_gripper_width + (box_length/2)
+    ur5_2_home_pose.position.z = 1 + delta_z
     ur5_2_home_pose.orientation.x = -0.5
     ur5_2_home_pose.orientation.y = -0.5
     ur5_2_home_pose.orientation.z = 0.5
