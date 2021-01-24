@@ -306,12 +306,12 @@ def main():
     arg_package_path = rp.get_path('pkg_task4')
     arg_file_path = arg_package_path + '/config/ur5_1_saved_trajectories/'
 
-    rospy.sleep(10)
+    #rospy.sleep(10)
 
     ic = Camera2D()
     ur5 = Ur5Moveit('ur5_1')
 
-    color_pub = rospy.Publisher('packageMsg_topic', packageMsg, queue_size = 10)
+    color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
     rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
 
     ur5.activate_conveyor_belt(100)

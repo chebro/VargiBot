@@ -12,7 +12,7 @@
     <!-- Run Task-4 ur5_2 node - this is responsible for sorting packages operating ur5_2 -->
     <node name="node_t4_ur5_2" pkg= "pkg_task4" type="node_ur5_2.py" output="screen"/>
 
-    <arg name="record" default="true"/>
+    <arg name="record" default="false"/>
     <arg name="rec_name" default="t4.bag"/>
 
     <group if="$(arg record)">

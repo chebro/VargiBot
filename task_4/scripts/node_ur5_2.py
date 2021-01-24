@@ -98,7 +98,7 @@ class Ur5Moveit:
         rospy.loginfo(pose_values)
 
         self._group.set_pose_target(arg_pose)
-        #rospy.loginfo(self._group.plan())
+
         flag_plan = self._group.go(wait=True)
 
         pose_values = self._group.get_current_pose().pose
@@ -248,7 +248,7 @@ def main():
     ur5 = Ur5Moveit('ur5_2')
 
     rospy.Subscriber('/eyrc/vb/logical_camera_2', LogicalCameraImage, ur5.func_callback_logical_camera)
-    rospy.Subscriber('/packageMsg_topic', packageMsg, ur5.func_get_color)
+    rospy.Subscriber('/topic_package_details', packageMsg, ur5.func_get_color)
 
     box_length = 0.15               # Length of the Package
     vacuum_gripper_width = 0.115    # Vacuum Gripper Width
@@ -298,23 +298,27 @@ def main():
             ur5._pkg_detect_flag = False # Mark as "already detected"
 
             ur5.activate_vacuum_gripper(True)   # Activate gripper
-            ur5.set_conveyor_belt_speed(100)
+
+            arg_file_name = "drop_to_int.yaml"     
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+            ur5.set_conveyor_belt_speed(100)    # Restart belt
+            
             if color == "red":
 
-                arg_file_name = "drop_to_"+color+".yaml"
+                arg_file_name = "int_to_"+color+".yaml"
                 ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name,  100)      # Go to bin
                 ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
 
             elif color == "yellow":
 
-                arg_file_name = "drop_to_"+color+".yaml"
+                arg_file_name = "int_to_"+color+".yaml"
                 ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
                 ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
             elif color == "green":
 
-                arg_file_name = "drop_to_"+color+".yaml"
+                arg_file_name = "int_to_"+color+".yaml"
                 ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
                 ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
