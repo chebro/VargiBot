@@ -301,12 +301,14 @@ def main():
     Main Function
     """
 
+    rospy.sleep(10)
+
     rp = rospkg.RosPack()
 
     arg_package_path = rp.get_path('pkg_task4')
     arg_file_path = arg_package_path + '/config/ur5_1_saved_trajectories/'
 
-    #rospy.sleep(10)
+    
 
     ic = Camera2D()
     ur5 = Ur5Moveit('ur5_1')
