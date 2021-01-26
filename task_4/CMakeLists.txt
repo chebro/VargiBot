@@ -106,7 +106,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES pkg_task_4
+#  LIBRARIES pkg_task4
  CATKIN_DEPENDS geometry_msgs rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
@@ -124,7 +124,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/pkg_task_4.cpp
+#   src/${PROJECT_NAME}/pkg_task4.cpp
 # )
 
 ## Add cmake target dependencies of the library

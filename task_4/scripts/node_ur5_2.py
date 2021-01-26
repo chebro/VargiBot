@@ -22,7 +22,7 @@ from std_srvs.srv import Empty
 from pkg_vb_sim.srv import vacuumGripper
 from pkg_vb_sim.srv import conveyorBeltPowerMsg
 from pkg_vb_sim.msg import LogicalCameraImage
-from pkg_task_4.msg import packageMsg
+from pkg_task4.msg import packageMsg
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -160,19 +160,17 @@ class Ur5Moveit:
         self._exectute_trajectory_client.wait_for_result()
         rospy.loginfo('\033[94m' + "Now at Pose: {}".format(arg_pose_name) + '\033[0m')
 
-
     def func_callback_logical_camera(self, msg):
         """
         Callback Function for Logical Camera Subscription
         """
-        if msg.models:
+        if msg.models and msg.models[-1].type != 'ur5':
 
             self._pkg_detect_flag = True
             self.i = msg.models[0].type[-2]
             self.j = msg.models[0].type[-1]
         else:
             self._pkg_detect_flag = False
-
 
     def activate_vacuum_gripper(self, state):
         """
@@ -250,34 +248,10 @@ def main():
     rospy.Subscriber('/eyrc/vb/logical_camera_2', LogicalCameraImage, ur5.func_callback_logical_camera)
     rospy.Subscriber('/topic_package_details', packageMsg, ur5.func_get_color)
 
-    box_length = 0.15               # Length of the Package
-    vacuum_gripper_width = 0.115    # Vacuum Gripper Width
-    delta_z = vacuum_gripper_width + (box_length/2)
-
-    ur5_2_home_pose = geometry_msgs.msg.Pose()
-    ur5_2_home_pose.position.x = -0.8
-    ur5_2_home_pose.position.y = 0
-    ur5_2_home_pose.position.z = 1 + delta_z
-    ur5_2_home_pose.orientation.x = -0.5
-    ur5_2_home_pose.orientation.y = -0.5
-    ur5_2_home_pose.orientation.z = 0.5
-    ur5_2_home_pose.orientation.w = 0.5
-
-    ur5_2_bin_red = copy.deepcopy(ur5_2_home_pose)
-    ur5_2_bin_yellow = copy.deepcopy(ur5_2_home_pose)
-    ur5_2_bin_green = copy.deepcopy(ur5_2_home_pose)
-
-    ur5_2_bin_red.position.x = 0.11
-    ur5_2_bin_red.position.y = 0.65
-
-    ur5_2_bin_yellow.position.x = 0.75
-    ur5_2_bin_yellow.position.y = 0.03
-
-    ur5_2_bin_green.position.x = 0.04
-    ur5_2_bin_green.position.y = -0.65
-
     count = 0
     color = "zero"
+    arg_file_name = color+"_to_drop.yaml"
+    ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
 
     while count<9:
         rospy.sleep(0.01)
@@ -288,21 +262,14 @@ def main():
             rospy.sleep(0.6)                # Delay to reach centre
             ur5.set_conveyor_belt_speed(0)  # Stop belt
 
-            pre_color = color
             color = ur5.color_w[0]
-
-            arg_file_name = pre_color+"_to_drop.yaml"
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
-
-            ur5._pkg_pickup_flag = True  # Mark as "ready for pick up"
-            ur5._pkg_detect_flag = False # Mark as "already detected"
-
+            ur5._pkg_detect_flag = False
+            rospy.sleep(0.3)
             ur5.activate_vacuum_gripper(True)   # Activate gripper
-
+            ur5.set_conveyor_belt_speed(100)
             arg_file_name = "drop_to_int.yaml"     
             ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
-            ur5.set_conveyor_belt_speed(100)    # Restart belt
-            
+        
             if color == "red":
 
                 arg_file_name = "int_to_"+color+".yaml"
@@ -311,7 +278,7 @@ def main():
 
 
             elif color == "yellow":
-
+                ur5.set_conveyor_belt_speed(80)
                 arg_file_name = "int_to_"+color+".yaml"
                 ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
                 ur5.activate_vacuum_gripper(False)  # Deactivate gripper
@@ -324,8 +291,11 @@ def main():
 
             ur5.color_w.pop(0)
             count = count + 1
+            
+            rospy.sleep(0.1)
+            arg_file_name = color+"_to_drop.yaml"
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
             ur5.set_conveyor_belt_speed(100)    # Resume conveyor
-
 
     del ur5
 
