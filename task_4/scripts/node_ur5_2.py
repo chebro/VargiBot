@@ -22,7 +22,7 @@ from std_srvs.srv import Empty
 from pkg_vb_sim.srv import vacuumGripper
 from pkg_vb_sim.srv import conveyorBeltPowerMsg
 from pkg_vb_sim.msg import LogicalCameraImage
-from pkg_task_4.msg import packageMsg
+from pkg_task4.msg import packageMsg
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image

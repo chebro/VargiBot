@@ -25,7 +25,7 @@ from pkg_vb_sim.msg import LogicalCameraImage
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from pkg_task_4.msg import packageMsg
+from pkg_task4.msg import packageMsg
 
 from cv_bridge import CvBridge, CvBridgeError
 from pyzbar.pyzbar import decode
