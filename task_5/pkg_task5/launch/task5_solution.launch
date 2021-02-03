@@ -1,0 +1,6 @@
+<launch>
+	<!-- Launch Task-5 Simulation Environment in Gazebo -->
+	<include file="$(find pkg_vb_sim)/launch/task5_simulation.launch" />
+        <!-- Launch the UR5_1 and UR5_2 with RVIZ -->
+	<include file="$(find pkg_vb_sim)/launch/two_ur5_move_group.launch" />
+</launch>
