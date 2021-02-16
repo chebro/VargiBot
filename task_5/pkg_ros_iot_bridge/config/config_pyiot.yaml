@@ -1,0 +1,13 @@
+# IoT Configuration
+config_iot:
+  mqtt_unique_id: "CeAhsAGA"
+  mqtt:
+    server_url: "broker.mqttdashboard.com"
+    server_port: 1883
+    topic_sub: "eyrc/CeAhsAGA/iot_to_ros"
+    topic_pub: "eyrc/CeAhsAGA/ros_to_iot"
+    incoming_orders: "eyrc/vb/CeAhsAGA/orders"
+    qos: 0
+
+    sub_cb_ros_topic: "/ros_iot_bridge/mqtt/sub"
+    spread_sheet_id: "1zm6nhfMDdUijzCuldgtv2cyIp10_iwgtioJrOPhRiEk"
