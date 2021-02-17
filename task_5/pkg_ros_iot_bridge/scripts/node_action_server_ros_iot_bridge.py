@@ -10,6 +10,7 @@ import actionlib
 import json
 
 from pkg_task5.msg import inventoryMsg
+from pkg_task5.msg import dispatchMsg
 
 from pkg_ros_iot_bridge.msg import msgRosIotAction
 from pkg_ros_iot_bridge.msg import msgRosIotResult
@@ -265,7 +266,14 @@ class IotRosBridgeActionServer:
         """
         TODO
         """
-        kwargs = json.loads(data)
+        kwargs = eval(data.inventoryData)
+        iot.publish_message_to_spreadsheet(**kwargs)
+
+    def func_dispatch_data_callback(self, data):
+        """
+        TODO
+        """
+        kwargs = eval(data.dispatchData)
         iot.publish_message_to_spreadsheet(**kwargs)
 def main():
     """
@@ -276,6 +284,7 @@ def main():
     server = IotRosBridgeActionServer()
 
     rospy.Subscriber('/topic_inventory_data', inventoryMsg, server.func_inventory_data_callback)
+    rospy.Subscriber('/topic_dispatch_data', dispatchMsg, server.func_dispatch_data_callback)
 
     rospy.spin()
 
