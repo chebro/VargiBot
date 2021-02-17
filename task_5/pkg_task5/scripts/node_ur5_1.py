@@ -8,6 +8,8 @@ import actionlib
 import rospkg
 import cv2
 
+import datetime
+import json
 import yaml
 import os
 import math
@@ -31,10 +33,6 @@ from pkg_task5.msg import inventoryMsg
 from cv_bridge import CvBridge, CvBridgeError
 from pyzbar.pyzbar import decode
 import numpy as np
-
-from datetime import date
-import json
-
 
 
 class Ur5Moveit:
@@ -349,7 +347,7 @@ def main():
     arg_package_path = rp.get_path('pkg_task5')
     arg_file_path = arg_package_path + '/config/ur5_1_saved_trajectories/'
 
-    rospy.sleep(10)
+    #rospy.sleep(10)
 
     ic = Camera2D()
     ur5 = Ur5Moveit('ur5_1')
@@ -362,32 +360,36 @@ def main():
     inv_obj = {}
 
     for i in range(3):
-        for j in range(3):
+        for j in reversed(range(3)):
+            print('\n\ni: ' + str(i) + ' j: ' + str(j) + '\n\n')
             color = ic.get_qr_data(ic.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
             
             inv_obj['Team ID'] = 'VB#1004'
-            inv_obj['Unique Id'] = 'CeAhsAGA'
-            inv_obj['SKU'] = color.upper()[0]+str(i)+str(j)+get_time_str
+            inv_obj['Unique ID'] = 'CeAhsAGA'
+            inv_obj['id'] = 'Inventory'
 
             if color == 'red':
+                inv_obj['SKU'] = 'R'+str(i)+str(j)+get_time_str()
                 inv_obj['Item'] = 'Medicine'
                 inv_obj['Priority'] = 'HP'
                 inv_obj['Cost'] = 300
 
             if color == 'yellow':
+                inv_obj['SKU'] = 'Y'+str(i)+str(j)+get_time_str()
                 inv_obj['Item'] = 'Food'
                 inv_obj['Priority'] = 'MP'
                 inv_obj['Cost'] = 200
 
             if color == 'green':
+                inv_obj['SKU'] = 'G'+str(i)+str(j)+get_time_str()
                 inv_obj['Item'] = 'Clothes'
                 inv_obj['Priority'] = 'LP'
                 inv_obj['Cost'] = 100
-            inv_obj['Storage Number'] = 'R'+i+'C'+j
+            inv_obj['Storage Number'] = 'R'+str(i)+'C'+str(j)
             inv_obj['Quantity'] = 1
 
-            str_inv_obj = json.dumps(inv_obj)
-
+            str_inv_obj = str(inv_obj)
+            rospy.sleep(2)
             inv_pub.publish(str_inv_obj)
             
 

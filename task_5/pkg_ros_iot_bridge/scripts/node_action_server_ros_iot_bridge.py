@@ -10,6 +10,7 @@ import actionlib
 import json
 
 from pkg_task5.msg import inventoryMsg
+from pkg_task5.msg import shippedMsg
 
 from pkg_ros_iot_bridge.msg import msgRosIotAction
 from pkg_ros_iot_bridge.msg import msgRosIotResult
@@ -44,6 +45,7 @@ class IotRosBridgeActionServer:
         self._config_mqtt_sub_cb_ros_topic = param_config_iot['mqtt']['sub_cb_ros_topic']
         self._config_mqtt_spread_sheet_id = param_config_iot['mqtt']['spread_sheet_id']
         self._config_mqtt_incoming_orders = param_config_iot['mqtt']['incoming_orders']
+        self._config_topic_incoming_orders = param_config_iot['mqtt']['topic_incoming']
 
         print("\n\nMQTT PUB: " + self._config_mqtt_sub_topic)
         print("MQTT SUB: " + self._config_mqtt_pub_topic + "\n\n")
@@ -54,6 +56,11 @@ class IotRosBridgeActionServer:
         self._handle_ros_pub = rospy.Publisher(self._config_mqtt_sub_cb_ros_topic,
                                                msgMqttSub,
                                                queue_size=10)
+        
+        # Initialize Incoming Orders Publisher
+        self._handle_incoming = rospy.Publisher(self._config_topic_incoming_orders,
+                                                    incomingMsg,
+                                                    queue_size=10)
 
         # # Subscribe to MQTT Topic
         # ret = iot.mqtt_subscribe_thread_start(self.mqtt_sub_callback,
@@ -260,13 +267,26 @@ class IotRosBridgeActionServer:
             "Cost": msg_obj["cost"]
         }
         iot.publish_message_to_spreadsheet(**kwargs)
+        self._config_topic_incoming_orders.publish(str(kwargs))
 
     def func_inventory_data_callback(self, data):
         """
         TODO
         """
-        kwargs = json.loads(data)
+        rospy.logwarn(type(data))
+        rospy.logwarn(data.inventoryData)
+        kwargs = eval(data.inventoryData)
         iot.publish_message_to_spreadsheet(**kwargs)
+
+    def func_shipped_data_callback(self, data):
+        """
+        TODO
+        """
+        rospy.logwarn(type(data))
+        rospy.logwarn(data.shippedData)
+        kwargs = eval(data.shippedData)
+        iot.publish_message_to_spreadsheet(**kwargs)
+        
 def main():
     """
     Main Function
@@ -276,6 +296,8 @@ def main():
     server = IotRosBridgeActionServer()
 
     rospy.Subscriber('/topic_inventory_data', inventoryMsg, server.func_inventory_data_callback)
+
+    rospy.Subscriber('/topic_shipped_data', shippedMsg, server.func_shipped_data_callback)
 
     rospy.spin()
 

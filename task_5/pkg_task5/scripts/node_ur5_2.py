@@ -14,6 +14,7 @@ import math
 import time
 import sys
 import copy
+import datetime
 
 import tf2_ros
 import tf2_msgs.msg
@@ -23,6 +24,7 @@ from pkg_vb_sim.srv import vacuumGripper
 from pkg_vb_sim.srv import conveyorBeltPowerMsg
 from pkg_vb_sim.msg import LogicalCameraImage
 from pkg_task5.msg import packageMsg
+from pkg_task5.msg import shippedMsg
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -230,9 +232,48 @@ class Ur5Moveit:
         rospy.loginfo(
             '\033[94m' + "Object of class Ur5Moveit Deleted." + '\033[0m')
 
-    def func_get_color(self, msg):
-
+    def func_get_package_details(self, msg):
         self.color_w.append(msg.color)
+        self.city_w.append(msg.city)
+
+    def func_orders_shipped(self, city, color):            
+        ship_obj['Team ID'] = 'VB#1004'
+        ship_obj['Unique ID'] = 'CeAhsAGA'
+        ship_obj['id'] = 'Orders Shipped'
+        ship_obj['Shipped Quantity'] = '1'
+        ship_obj['Shipped Date and Time'] = get_time_str()
+
+        ship_obj['City'] = city
+        ship_obj['Shipped Status'] = 'YES'
+
+        if color == 'red':
+            ship_obj['Item'] = 'Medicine'
+            ship_obj['Priority'] = 'HP'
+            ship_obj['Cost'] = 300
+            ship_obj['Estimated Time of Delivery'] = get_time_str()
+
+        if color == 'yellow':
+            ship_obj['Item'] = 'Food'
+            ship_obj['Priority'] = 'MP'
+            ship_obj['Cost'] = 200
+            ship_obj['Estimated Time of Delivery'] = get_time_str()
+
+        if color == 'green':
+            ship_obj['Item'] = 'Clothes'
+            ship_obj['Priority'] = 'LP'
+            ship_obj['Cost'] = 100
+            ship_obj['Estimated Time of Delivery'] = get_time_str()
+
+        str_ship_obj = str(ship_obj)
+        rospy.sleep(2)
+        ship_pub.publish(str_ship_obj)
+
+def get_time_str():
+    timestamp = int(time.time())
+    value = datetime.datetime.fromtimestamp(timestamp)
+    str_time = value.strftime('%Y-%m-%d %H:%M:%S')
+
+    return str_time
 
 def main():
     """
@@ -246,7 +287,8 @@ def main():
     ur5 = Ur5Moveit('ur5_2')
 
     rospy.Subscriber('/eyrc/vb/logical_camera_2', LogicalCameraImage, ur5.func_callback_logical_camera)
-    rospy.Subscriber('/topic_package_details', packageMsg, ur5.func_get_color)
+    rospy.Subscriber('/topic_package_details', packageMsg, ur5.func_get_package_details)
+    ship_pub = rospy.Publisher('topic_shipped_data', shippedMsg, queue_size = 10)
 
     count = 0
     color = "zero"
@@ -296,6 +338,8 @@ def main():
             arg_file_name = color+"_to_drop.yaml"
             ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
             ur5.set_conveyor_belt_speed(100)    # Resume conveyor
+            ur5.func_orders_shipped(ur5.city_w[0],color)
+            ur5.color_city.pop(0)
 
     del ur5
 
