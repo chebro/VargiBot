@@ -29,10 +29,44 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from pkg_task5.msg import packageMsg
 from pkg_task5.msg import inventoryMsg
+from pkg_ros_iot_bridge import incomingMsg
+from pkg_task5.msg import dispatchMsg
 
 from cv_bridge import CvBridge, CvBridgeError
 from pyzbar.pyzbar import decode
 import numpy as np
+
+class PriorityQueue: 
+    def __init__(self): 
+        self.queue = [] 
+  
+    def __str__(self): 
+        return ' '.join([str(i) for i in self.queue]) 
+  
+    # for checking if the queue is empty 
+    def isEmpty(self): 
+        return len(self.queue) == 0
+  
+    # for inserting an element in the queue 
+    def insert(self, data): 
+        self.queue.append(data) 
+  
+    # for popping an element based on Priority 
+    def delete(self): 
+        try: 
+            max = 0
+            for i in range(len(self.queue)): 
+                if self.queue[i][Cost] > self.queue[max][Cost]: 
+                    max = i 
+                elif self.queue[i][Cost] == self.queue[max][Cost]:
+                    if self.queue[i]['Order Date and Time'] < self.queue[i]['Order Date and Time']:
+                        max = i
+            item = self.queue[max] 
+            del self.queue[max] 
+            return item 
+        except IndexError: 
+            print() 
+            exit() 
 
 
 class Ur5Moveit:
@@ -68,6 +102,10 @@ class Ur5Moveit:
         self._box_x = [0.28, 0, -0.28]
         self._box_y = 6.59-7.00
         self._box_z = [1.92, 1.65, 1.43, 1.20]
+
+        #incoming orders queue
+
+        self._orders = PriorityQueue()
 
         #Setup for tf
         self._tfBuffer = tf2_ros.Buffer()
@@ -234,6 +272,13 @@ class Ur5Moveit:
             flag_success = self.set_joint_angles(arg_list_joint_angles, arg_file_path, arg_file_name)
             rospy.logwarn("attempts: {}".format(number_attempts) )
 
+    def func_callback_topic_incoming_orders(data):
+
+        incomingDict = eval(data.incomingData)
+
+        self._orders.insert(incomingData)
+
+
     def __del__(self):
         """
         Destructor
@@ -299,40 +344,19 @@ class Camera2D:
     def __del__(self):
         rospy.loginfo('Information Received.')
 
-class PriorityQueue(object): 
-    def __init__(self): 
-        self.queue = [] 
-  
-    def __str__(self): 
-        return ' '.join([str(i) for i in self.queue]) 
-  
-    # for checking if the queue is empty 
-    def isEmpty(self): 
-        return len(self.queue) == 0
-  
-    # for inserting an element in the queue 
-    def insert(self, data): 
-        self.queue.append(data) 
-  
-    # for popping an element based on Priority 
-    def delete(self): 
-        try: 
-            max = 0
-            for i in range(len(self.queue)): 
-                if self.queue[i] > self.queue[max]: 
-                    max = i 
-            item = self.queue[max] 
-            del self.queue[max] 
-            return item 
-        except IndexError: 
-            print() 
-            exit() 
   
 
 def get_time_str():
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp)
     str_time = value.strftime('%m%y')
+
+    return str_time
+
+def get_time_str():
+    timestamp = int(time.time())
+    value = datetime.datetime.fromtimestamp(timestamp)
+    str_time = value.strftime('%Y-%m-%d %H:%M:%S')
 
     return str_time
 
@@ -357,6 +381,11 @@ def main():
     """
     Inventory data publisher.
     """
+
+    red = []
+    yellow = []
+    green = []
+
     inv_obj = {}
 
     for i in range(3):
@@ -373,61 +402,104 @@ def main():
                 inv_obj['Item'] = 'Medicine'
                 inv_obj['Priority'] = 'HP'
                 inv_obj['Cost'] = 300
+                red.append((i, j))
 
             if color == 'yellow':
                 inv_obj['SKU'] = 'Y'+str(i)+str(j)+get_time_str()
                 inv_obj['Item'] = 'Food'
                 inv_obj['Priority'] = 'MP'
                 inv_obj['Cost'] = 200
-
+                yellow.append((i, j))
             if color == 'green':
                 inv_obj['SKU'] = 'G'+str(i)+str(j)+get_time_str()
                 inv_obj['Item'] = 'Clothes'
                 inv_obj['Priority'] = 'LP'
                 inv_obj['Cost'] = 100
+                green.append((i, j))
             inv_obj['Storage Number'] = 'R'+str(i)+'C'+str(j)
             inv_obj['Quantity'] = 1
-
-            str_inv_obj = str(inv_obj)
             rospy.sleep(2)
+            str_inv_obj = str(inv_obj)
+
             inv_pub.publish(str_inv_obj)
             
 
 
     color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
+    dispatch_pub = rospy.Publisher('topic_dispatch_orders', dispatchMsg, queue_size = 10)
+
+    rospy.Subscriber('topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
     rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
 
     ur5.activate_conveyor_belt(100)
     package_info = packageMsg()
-    for i in range(3):
-        for j in reversed(range(3)):
+    dispatch_info = dispatchMsg()
 
-            color = ic.get_qr_data(ic.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
+    while not rospy.is_shutdown():
+
+        if not ur5._orders.isEmpty():
+
+            order = ur5._orders.delete()
+            
+            if order.Priority == 'HP':
+                (i, j) = red[0]
+                red.pop(0)
+                color = 'red'
+            if order.Priority == 'MP':
+                (i, j) = yellow[0]
+                yellow.pop(0)
+                color = 'yellow'
+
+            if order.Priority == 'LP':
+                (i, j) = green[0]
+                green.pop(0)
+                color = 'green'
 
             package_info.packageName = 'Packagen'+str(i)+str(j)
             package_info.color = color
-
+            package_info.city = order[City]
+            '''The arm files are to be change'''
+            '''
             if(j == 2 and i == 0):
                 arg_file_name = 'zero_to_packagen02.yaml'
             else:
                 arg_file_name = 'drop_to_packagen' + str(i) + str(j) + '.yaml'
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
-            ur5.attach_box(i = j, j = i)
-            ur5.activate_vacuum_gripper(True)
-            rospy.sleep(0.5)
+                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
+                ur5.attach_box(i = j, j = i)
+                ur5.activate_vacuum_gripper(True)
+                rospy.sleep(0.5)
 
-            while ur5.presence_of_package:          #Avoiding: Package being placed over a package
-                rospy.sleep(1)
+                while ur5.presence_of_package:          #Avoiding: Package being placed over a package
+                    rospy.sleep(1)
+            '''
+                arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
+                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
+                ur5.activate_vacuum_gripper(False)
+                ur5.detach_box(i = j, j = i)
+                color_pub.publish(package_info)
+                dispatch_info_dict = {
+                    'id' : 'OrdersDispatched'
+                    'Team ID': order["Team ID"]
+                    'Unique ID': order["Unique ID"]
+                    'Order ID': order["Order ID"]
+                    'City': order['City']
+                    'Item': order['Item']
+                    'Priority': order['Priority']
+                    'Dispatch Quantity': 1
+                    'Cost' : order['Cost']
+                    'Dispatch Status': order['Dispatch Status']
+                    'Dispatch Date and Time': get_time_str()
 
-            arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
-            ur5.activate_vacuum_gripper(False)
-            ur5.detach_box(i = j, j = i)
-            color_pub.publish(package_info)
+                }
 
-            rospy.sleep(0.5)
+                dispatch_info = str(dispatch_info_dict)
+                dispatch_pub.publish(dispatch_info)
 
-    ur5.go_to_predefined_pose("allZeros")
+                rospy.sleep(0.5)
+        else
+            pass
+    
+    #ur5.go_to_predefined_pose("allZeros")
     rospy.sleep(1)  #waiting for the arm to go to required position
 
     del ur5
