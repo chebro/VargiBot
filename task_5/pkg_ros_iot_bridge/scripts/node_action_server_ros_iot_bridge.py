@@ -15,7 +15,6 @@ from pkg_ros_iot_bridge.msg import msgRosIotResult
 # from pkg_ros_iot_bridge.msg import msgRosIotFeedback
 
 from pkg_ros_iot_bridge.msg import msgMqttSub
-from pkg_ros_iot_bridge.msg import msg
 
 from pyiot import iot
 
@@ -208,34 +207,57 @@ class IotRosBridgeActionServer:
         goal_id = goal_handle.get_goal_id()
         rospy.logerr("Canceled " + str(goal_id))
 
-    def func_incoming_order_callback(self, data):
+
+    # def mqtt_sub_callback(self, client, userdata, message):
+    #     """
+    #     This is a callback function for MQTT Subscriptions
+    #     """
+    #     payload = str(message.payload.decode("utf-8"))
+
+    #     print("[MQTT SUB CB] Message: ", payload)
+    #     print("[MQTT SUB CB] Topic: ", message.topic)
+
+    #     msg_mqtt_sub = msgMqttSub()
+    #     msg_mqtt_sub.timestamp = rospy.Time.now()
+    #     msg_mqtt_sub.topic = message.topic
+    #     msg_mqtt_sub.message = payload
+
+    #     self._handle_ros_pub.publish(msg_mqtt_sub)
+
+    def func_incoming_order_callback(self, client, userdata, message):
         """
         TODO
         """
-        temp = json.loads(data)
-        
-        if temp.item == 'Clothes':
-            temp.priority='LP'
-            temp.cost='100'
-        elif temp.item == 'Food':
-            temp.priority='MP'
-            temp.cost='200'
-        else:
-            temp.priority='HP'
-            temp.cost='300'
+        payload = str(message.payload.decode("utf-8"))
+        msg_obj = json.loads(payload)
 
-        iot.publish_message_to_spreadsheet({"Order ID": temp.order_id,
-                                            "Order Date and Time": temp.order_time,
-                                            "Item": temp.item,
-                                            "Order Quantity": item.qty,
-                                            "City": temp.city,
-                                            "Latitude": temp.lat,
-                                            "Longitude": temp.lon,
-                                            "Priority": temp.priority,
-                                            "Unique ID": self._config_mqtt_unique_id,
-                                            "Team ID": "VB_1004",
-                                            "Cost": temp.cost
-                                            })
+        # rospy.loginfo('\n\nPAYLOAD: \n\n' + payload + '\n\n')
+
+        if msg_obj["item"] == 'Clothes':
+            msg_obj["priority"]='LP'
+            msg_obj["cost"]='100'
+        elif msg_obj["item"] == 'Food':
+            msg_obj["priority"]='MP'
+            msg_obj["cost"]='200'
+        else:
+            msg_obj["priority"]='HP'
+            msg_obj["cost"]='300'
+
+        kwargs = {
+            "id": "Incoming Orders",
+            "Order ID": msg_obj["order_id"],
+            "Order Date and Time": msg_obj["order_time"],
+            "Item": msg_obj["item"],
+            "Order Quantity": msg_obj["qty"],
+            "City": msg_obj["city"],
+            "Latitude": msg_obj["lat"],
+            "Longitude": msg_obj["lon"],
+            "Priority": msg_obj["priority"],
+            "Unique ID": self._config_mqtt_unique_id,
+            "Team ID": "VB_1004",
+            "Cost": msg_obj["cost"]
+        }
+        iot.publish_message_to_spreadsheet(**kwargs)
 
 def main():
     """
