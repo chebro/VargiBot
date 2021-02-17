@@ -22,7 +22,7 @@ from std_srvs.srv import Empty
 from pkg_vb_sim.srv import vacuumGripper
 from pkg_vb_sim.srv import conveyorBeltPowerMsg
 from pkg_vb_sim.msg import LogicalCameraImage
-from pkg_task4.msg import packageMsg
+from pkg_task5.msg import packageMsg
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -240,7 +240,7 @@ def main():
     """
     rp = rospkg.RosPack()
 
-    arg_package_path = rp.get_path('pkg_task4')
+    arg_package_path = rp.get_path('pkg_task5')
     arg_file_path = arg_package_path + '/config/ur5_2_saved_trajectories/'
 
     ur5 = Ur5Moveit('ur5_2')

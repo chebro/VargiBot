@@ -9,6 +9,8 @@ import rospy
 import actionlib
 import json
 
+from pkg_task5.msg import inventoryMsg
+
 from pkg_ros_iot_bridge.msg import msgRosIotAction
 from pkg_ros_iot_bridge.msg import msgRosIotResult
 # from pkg_ros_iot_bridge.msg import msgRosIotGoal
@@ -254,11 +256,17 @@ class IotRosBridgeActionServer:
             "Longitude": msg_obj["lon"],
             "Priority": msg_obj["priority"],
             "Unique ID": self._config_mqtt_unique_id,
-            "Team ID": "VB_1004",
+            "Team ID": "VB#1004",
             "Cost": msg_obj["cost"]
         }
         iot.publish_message_to_spreadsheet(**kwargs)
 
+    def func_inventory_data_callback(self, data):
+        """
+        TODO
+        """
+        kwargs = json.loads(data)
+        iot.publish_message_to_spreadsheet(**kwargs)
 def main():
     """
     Main Function
@@ -266,6 +274,8 @@ def main():
     rospy.init_node('node_ros_iot_bridge_action_server')
 
     server = IotRosBridgeActionServer()
+
+    rospy.Subscriber('/topic_inventory_data', inventoryMsg, server.func_inventory_data_callback)
 
     rospy.spin()
 

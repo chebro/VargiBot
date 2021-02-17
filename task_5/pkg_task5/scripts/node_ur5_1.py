@@ -25,11 +25,17 @@ from pkg_vb_sim.msg import LogicalCameraImage
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from pkg_task4.msg import packageMsg
+from pkg_task5.msg import packageMsg
+from pkg_task5.msg import inventoryMsg
 
 from cv_bridge import CvBridge, CvBridgeError
 from pyzbar.pyzbar import decode
 import numpy as np
+
+from datetime import date
+import json
+
+
 
 class Ur5Moveit:
     """
@@ -295,6 +301,43 @@ class Camera2D:
     def __del__(self):
         rospy.loginfo('Information Received.')
 
+class PriorityQueue(object): 
+    def __init__(self): 
+        self.queue = [] 
+  
+    def __str__(self): 
+        return ' '.join([str(i) for i in self.queue]) 
+  
+    # for checking if the queue is empty 
+    def isEmpty(self): 
+        return len(self.queue) == 0
+  
+    # for inserting an element in the queue 
+    def insert(self, data): 
+        self.queue.append(data) 
+  
+    # for popping an element based on Priority 
+    def delete(self): 
+        try: 
+            max = 0
+            for i in range(len(self.queue)): 
+                if self.queue[i] > self.queue[max]: 
+                    max = i 
+            item = self.queue[max] 
+            del self.queue[max] 
+            return item 
+        except IndexError: 
+            print() 
+            exit() 
+  
+
+def get_time_str():
+    timestamp = int(time.time())
+    value = datetime.datetime.fromtimestamp(timestamp)
+    str_time = value.strftime('%m%y')
+
+    return str_time
+
 
 def main():
     """
@@ -303,13 +346,51 @@ def main():
 
     rp = rospkg.RosPack()
 
-    arg_package_path = rp.get_path('pkg_task4')
+    arg_package_path = rp.get_path('pkg_task5')
     arg_file_path = arg_package_path + '/config/ur5_1_saved_trajectories/'
 
     rospy.sleep(10)
 
     ic = Camera2D()
     ur5 = Ur5Moveit('ur5_1')
+
+    inv_pub = rospy.Publisher('topic_inventory_data', inventoryMsg, queue_size = 10)
+
+    """
+    Inventory data publisher.
+    """
+    inv_obj = {}
+
+    for i in range(3):
+        for j in range(3):
+            color = ic.get_qr_data(ic.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
+            
+            inv_obj['Team ID'] = 'VB#1004'
+            inv_obj['Unique Id'] = 'CeAhsAGA'
+            inv_obj['SKU'] = color.upper()[0]+str(i)+str(j)+get_time_str
+
+            if color == 'red':
+                inv_obj['Item'] = 'Medicine'
+                inv_obj['Priority'] = 'HP'
+                inv_obj['Cost'] = 300
+
+            if color == 'yellow':
+                inv_obj['Item'] = 'Food'
+                inv_obj['Priority'] = 'MP'
+                inv_obj['Cost'] = 200
+
+            if color == 'green':
+                inv_obj['Item'] = 'Clothes'
+                inv_obj['Priority'] = 'LP'
+                inv_obj['Cost'] = 100
+            inv_obj['Storage Number'] = 'R'+i+'C'+j
+            inv_obj['Quantity'] = 1
+
+            str_inv_obj = json.dumps(inv_obj)
+
+            inv_pub.publish(str_inv_obj)
+            
+
 
     color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
     rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
