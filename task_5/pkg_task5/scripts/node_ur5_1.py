@@ -276,7 +276,7 @@ class Ur5Moveit:
 
         incomingDict = eval(data.incomingData)
 
-        self._orders.insert(incomingData)
+        self._orders.insert(incomingDict)
 
 
     def __del__(self):
@@ -298,6 +298,7 @@ class Camera2D:
         qr_result = decode(arg_image)
 
         if ( len( qr_result ) > 0):
+            rospy.logwarn(qr_result[0].data)
             return (qr_result[0].data)
         else :
           # setting values for base colors
@@ -312,13 +313,17 @@ class Camera2D:
 
             # displaying the most prominent color
             if (g_mean > r_mean and g_mean > y_mean):
+                rospy.logwarn('\n\nDETECTED GREEN\n\n')
                 return 'green'
             elif (y_mean > r_mean and y_mean > g_mean):
+                rospy.logwarn('\n\nDETECTED YELLOW\n\n')
                 return 'yellow'
             elif (r_mean > y_mean and r_mean > g_mean):
+                rospy.logwarn('\n\nDETECTED RED\n\n')
                 return 'red'
             else:
                 return 'NA'
+                rospy.logwarn('\n\nDETECTED NIL\n\n')
 
 
     def callback(self,data):
@@ -346,7 +351,7 @@ class Camera2D:
 
   
 
-def get_time_str():
+def get_sku_str():
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp)
     str_time = value.strftime('%m%y')
@@ -371,12 +376,17 @@ def main():
     arg_package_path = rp.get_path('pkg_task5')
     arg_file_path = arg_package_path + '/config/ur5_1_saved_trajectories/'
 
-    #rospy.sleep(10)
-
     ic = Camera2D()
     ur5 = Ur5Moveit('ur5_1')
 
+    rospy.sleep(5)
+
     inv_pub = rospy.Publisher('topic_inventory_data', inventoryMsg, queue_size = 10)
+    color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
+    dispatch_pub = rospy.Publisher('topic_dispatch_orders', dispatchMsg, queue_size = 10)
+
+    rospy.Subscriber('/topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
+    rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
 
     """
     Inventory data publisher.
@@ -398,73 +408,78 @@ def main():
             inv_obj['id'] = 'Inventory'
 
             if color == 'red':
-                inv_obj['SKU'] = 'R'+str(i)+str(j)+get_time_str()
+                inv_obj['SKU'] = 'R'+str(i)+str(j)+get_sku_str()
                 inv_obj['Item'] = 'Medicine'
                 inv_obj['Priority'] = 'HP'
                 inv_obj['Cost'] = 300
                 red.append((i, j))
 
             if color == 'yellow':
-                inv_obj['SKU'] = 'Y'+str(i)+str(j)+get_time_str()
+                inv_obj['SKU'] = 'Y'+str(i)+str(j)+get_sku_str()
                 inv_obj['Item'] = 'Food'
                 inv_obj['Priority'] = 'MP'
                 inv_obj['Cost'] = 200
                 yellow.append((i, j))
+
             if color == 'green':
-                inv_obj['SKU'] = 'G'+str(i)+str(j)+get_time_str()
+                inv_obj['SKU'] = 'G'+str(i)+str(j)+get_sku_str()
                 inv_obj['Item'] = 'Clothes'
                 inv_obj['Priority'] = 'LP'
                 inv_obj['Cost'] = 100
                 green.append((i, j))
+
             inv_obj['Storage Number'] = 'R'+str(i)+'C'+str(j)
             inv_obj['Quantity'] = 1
-            rospy.sleep(2)
+            rospy.sleep(3)
             str_inv_obj = str(inv_obj)
 
             inv_pub.publish(str_inv_obj)
             
 
-
-    color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
-    dispatch_pub = rospy.Publisher('topic_dispatch_orders', dispatchMsg, queue_size = 10)
-
-    rospy.Subscriber('/topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
-    rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
+    rospy.logwarn(red)
+    rospy.logwarn(green)
+    rospy.logwarn(yellow)
 
     ur5.activate_conveyor_belt(100)
     package_info = packageMsg()
     dispatch_info = dispatchMsg()
+
+    count = 0
 
     while not rospy.is_shutdown():
 
         if not ur5._orders.isEmpty() and count<9:
 
             order = ur5._orders.delete()
-            
-            if order.Priority == 'HP':
+            rospy.logwarn(order)
+
+            if order["Priority"] == 'HP':
                 (i, j) = red[0]
                 red.pop(0)
                 color = 'red'
-            if order.Priority == 'MP':
+
+            if order["Priority"] == 'MP':
                 (i, j) = yellow[0]
                 yellow.pop(0)
                 color = 'yellow'
 
-            if order.Priority == 'LP':
+            if order["Priority"] == 'LP':
                 (i, j) = green[0]
                 green.pop(0)
                 color = 'green'
 
             package_info.packageName = 'Packagen'+str(i)+str(j)
             package_info.color = color
-            package_info.city = order[City]
+            package_info.city = order["City"]
             '''The arm files are to be change'''
             
             if(count==0):
                 arg_file_name = 'zero_to_packagen' + str(i) + str(j) + '.yaml'
             else:
                 arg_file_name = 'drop_to_packagen' + str(i) + str(j) + '.yaml'
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
+            
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 30)
+            rospy.logwarn('\n\nArm is going to ' + str(i)+ str(j)+'\n\n')
             ur5.attach_box(i = j, j = i)
             ur5.activate_vacuum_gripper(True)
             rospy.sleep(0.5)
@@ -473,13 +488,13 @@ def main():
                 rospy.sleep(1)
             
             arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 30)
             ur5.activate_vacuum_gripper(False)
             ur5.detach_box(i = j, j = i)
             color_pub.publish(package_info)
             
             dispatch_info_dict = {
-                'id' : 'OrdersDispatched',
+                'id' : 'Orders Dispatched',
                 'Team ID': order["Team ID"],
                 'Unique ID': order["Unique ID"],
                 'Order ID': order["Order ID"],
@@ -488,7 +503,7 @@ def main():
                 'Priority': order['Priority'],
                 'Dispatch Quantity': 1,
                 'Cost' : order['Cost'],
-                'Dispatch Status': order['Dispatch Status'],
+                'Dispatch Status': 'YES',
                 'Dispatch Date and Time': get_time_str()
             }
 
