@@ -29,7 +29,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from pkg_task5.msg import packageMsg
 from pkg_task5.msg import inventoryMsg
-from pkg_ros_iot_bridge import incomingMsg
+from pkg_ros_iot_bridge.msg import incomingMsg
 from pkg_task5.msg import dispatchMsg
 
 from cv_bridge import CvBridge, CvBridgeError
@@ -272,7 +272,7 @@ class Ur5Moveit:
             flag_success = self.set_joint_angles(arg_list_joint_angles, arg_file_path, arg_file_name)
             rospy.logwarn("attempts: {}".format(number_attempts) )
 
-    def func_callback_topic_incoming_orders(data):
+    def func_callback_topic_incoming_orders(self, data):
 
         incomingDict = eval(data.incomingData)
 
@@ -428,7 +428,7 @@ def main():
     color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
     dispatch_pub = rospy.Publisher('topic_dispatch_orders', dispatchMsg, queue_size = 10)
 
-    rospy.Subscriber('topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
+    rospy.Subscriber('/topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
     rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
 
     ur5.activate_conveyor_belt(100)
@@ -495,7 +495,7 @@ def main():
             dispatch_pub.publish(dispatch_info)
 
             rospy.sleep(0.5)
-        else
+        else:
             pass
     
     #ur5.go_to_predefined_pose("allZeros")

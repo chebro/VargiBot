@@ -9,11 +9,11 @@
 	<include file="$(find pkg_vb_sim)/launch/two_ur5_move_group.launch" />
 
 	<!-- Launch ROS IoT action server node -->
-	<node name= "node_action_server_ros_iot_bridge" pkg= "pkg_ros_iot_bridge" type="node_action_server_ros_iot_bridge.py" output="screen"/>
+	<!-- <node name= "node_action_server_ros_iot_bridge" pkg= "pkg_ros_iot_bridge" type="node_action_server_ros_iot_bridge.py" output="screen"/> -->
 
 	<!-- Launch ur5_1 node -->
-	<node name= "node_ur5_1" pkg= "pkg_task5" type="node_ur5_1.py" output="screen"/>
+	<!-- <node name= "node_ur5_1" pkg= "pkg_task5" type="node_ur5_1.py" output="screen"/> -->
 
 	<!-- Launch ur5_2 node -->
-	<node name= "node_ur5_2" pkg= "pkg_task5" type="node_ur5_2.py" output="screen"/>
+	<!-- <node name= "node_ur5_2" pkg= "pkg_task5" type="node_ur5_2.py" output="screen"/> -->
 </launch>

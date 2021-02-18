@@ -269,7 +269,7 @@ class IotRosBridgeActionServer:
             "Cost": msg_obj["cost"]
         }
         iot.publish_message_to_spreadsheet(**kwargs)
-        self._config_topic_incoming_orders.publish(str(kwargs))
+        self._handle_incoming.publish(str(kwargs))
 
     def func_inventory_data_callback(self, data):
         """
