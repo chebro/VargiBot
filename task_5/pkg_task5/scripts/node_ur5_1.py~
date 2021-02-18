@@ -437,7 +437,7 @@ def main():
 
     while not rospy.is_shutdown():
 
-        if not ur5._orders.isEmpty() and count<9:
+        if not ur5._orders.isEmpty():
 
             order = ur5._orders.delete()
             
@@ -459,25 +459,24 @@ def main():
             package_info.color = color
             package_info.city = order[City]
             '''The arm files are to be change'''
-            
-            if(count==0):
-                arg_file_name = 'zero_to_packagen' + str(i) + str(j) + '.yaml'
+            '''
+            if(j == 2 and i == 0):
+                arg_file_name = 'zero_to_packagen02.yaml'
             else:
                 arg_file_name = 'drop_to_packagen' + str(i) + str(j) + '.yaml'
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
-            ur5.attach_box(i = j, j = i)
-            ur5.activate_vacuum_gripper(True)
-            rospy.sleep(0.5)
+                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
+                ur5.attach_box(i = j, j = i)
+                ur5.activate_vacuum_gripper(True)
+                rospy.sleep(0.5)
 
-            while ur5.presence_of_package:          #Avoiding: Package being placed over a package
-                rospy.sleep(1)
-            
+                while ur5.presence_of_package:          #Avoiding: Package being placed over a package
+                    rospy.sleep(1)
+            '''
             arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
             ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
             ur5.activate_vacuum_gripper(False)
             ur5.detach_box(i = j, j = i)
             color_pub.publish(package_info)
-            
             dispatch_info_dict = {
                 'id' : 'OrdersDispatched',
                 'Team ID': order["Team ID"],
@@ -496,7 +495,6 @@ def main():
             dispatch_pub.publish(dispatch_info)
 
             rospy.sleep(0.5)
-            count = count + 1
         else
             pass
     
