@@ -19,6 +19,7 @@ from pkg_ros_iot_bridge.msg import msgRosIotResult
 # from pkg_ros_iot_bridge.msg import msgRosIotFeedback
 
 from pkg_ros_iot_bridge.msg import msgMqttSub
+from pkg_ros_iot_bridge.msg import incomingMsg
 
 from pyiot import iot
 
@@ -54,12 +55,12 @@ class IotRosBridgeActionServer:
         print param_config_iot
 
         # Initialize ROS Topic Publication
-        self._handle_ros_pub = rospy.Publisher(self._config_mqtt_sub_cb_ros_topic,
-                                               msgMqttSub,
-                                               queue_size=10)
+        # self._handle_ros_pub = rospy.Publisher(self._config_mqtt_sub_cb_ros_topic,
+        #                                        msgMqttSub,
+        #                                        queue_size=10)
         
         # Initialize Incoming Orders Publisher
-        self._handle_incoming = rospy.Publisher(self._config_topic_incoming_orders,
+        self._handle_incoming = rospy.Publisher('/topic_incoming_orders',
                                                     incomingMsg,
                                                     queue_size=10)
 
@@ -301,7 +302,6 @@ def main():
 
     rospy.Subscriber('/topic_inventory_data', inventoryMsg, server.func_inventory_data_callback)
     rospy.Subscriber('/topic_dispatch_data', dispatchMsg, server.func_dispatch_data_callback)
-
     rospy.Subscriber('/topic_shipped_data', shippedMsg, server.func_shipped_data_callback)
 
     rospy.spin()

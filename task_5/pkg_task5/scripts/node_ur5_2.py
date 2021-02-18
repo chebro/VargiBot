@@ -293,7 +293,7 @@ def main():
     count = 0
     color = "zero"
     arg_file_name = color+"_to_drop.yaml"
-    ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+    #ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
 
     while count<9:
         rospy.sleep(0.01)
@@ -310,33 +310,33 @@ def main():
             ur5.activate_vacuum_gripper(True)   # Activate gripper
             ur5.set_conveyor_belt_speed(100)
             arg_file_name = "drop_to_int.yaml"     
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+            #ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
         
-            if color == "red":
+            # if color == "red":
 
-                arg_file_name = "int_to_"+color+".yaml"
-                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name,  100)      # Go to bin
-                ur5.activate_vacuum_gripper(False)  # Deactivate gripper
+            #     arg_file_name = "int_to_"+color+".yaml"
+            #     ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name,  100)      # Go to bin
+            #     ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
 
-            elif color == "yellow":
-                ur5.set_conveyor_belt_speed(80)
-                arg_file_name = "int_to_"+color+".yaml"
-                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
-                ur5.activate_vacuum_gripper(False)  # Deactivate gripper
+            # elif color == "yellow":
+            #     ur5.set_conveyor_belt_speed(80)
+            #     arg_file_name = "int_to_"+color+".yaml"
+            #     ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
+            #     ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
-            elif color == "green":
+            # elif color == "green":
 
-                arg_file_name = "int_to_"+color+".yaml"
-                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
-                ur5.activate_vacuum_gripper(False)  # Deactivate gripper
+            #     arg_file_name = "int_to_"+color+".yaml"
+            #     ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
+            #     ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
             ur5.color_w.pop(0)
             count = count + 1
             
             rospy.sleep(0.1)
             arg_file_name = color+"_to_drop.yaml"
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+            # ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
             ur5.set_conveyor_belt_speed(100)    # Resume conveyor
             ur5.func_orders_shipped(ur5.city_w[0],color)
             ur5.color_city.pop(0)

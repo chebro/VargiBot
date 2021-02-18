@@ -56,9 +56,9 @@ class PriorityQueue:
         try: 
             max = 0
             for i in range(len(self.queue)): 
-                if self.queue[i][Cost] > self.queue[max][Cost]: 
+                if self.queue[i]["Cost"] > self.queue[max]["Cost"]: 
                     max = i 
-                elif self.queue[i][Cost] == self.queue[max][Cost]:
+                elif self.queue[i]["Cost"] == self.queue[max]["Cost"]:
                     if self.queue[i]['Order Date and Time'] < self.queue[i]['Order Date and Time']:
                         max = i
             item = self.queue[max] 
@@ -472,30 +472,29 @@ def main():
                 while ur5.presence_of_package:          #Avoiding: Package being placed over a package
                     rospy.sleep(1)
             '''
-                arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
-                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
-                ur5.activate_vacuum_gripper(False)
-                ur5.detach_box(i = j, j = i)
-                color_pub.publish(package_info)
-                dispatch_info_dict = {
-                    'id' : 'OrdersDispatched'
-                    'Team ID': order["Team ID"]
-                    'Unique ID': order["Unique ID"]
-                    'Order ID': order["Order ID"]
-                    'City': order['City']
-                    'Item': order['Item']
-                    'Priority': order['Priority']
-                    'Dispatch Quantity': 1
-                    'Cost' : order['Cost']
-                    'Dispatch Status': order['Dispatch Status']
-                    'Dispatch Date and Time': get_time_str()
+            arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 9)
+            ur5.activate_vacuum_gripper(False)
+            ur5.detach_box(i = j, j = i)
+            color_pub.publish(package_info)
+            dispatch_info_dict = {
+                'id' : 'OrdersDispatched',
+                'Team ID': order["Team ID"],
+                'Unique ID': order["Unique ID"],
+                'Order ID': order["Order ID"],
+                'City': order['City'],
+                'Item': order['Item'],
+                'Priority': order['Priority'],
+                'Dispatch Quantity': 1,
+                'Cost' : order['Cost'],
+                'Dispatch Status': order['Dispatch Status'],
+                'Dispatch Date and Time': get_time_str()
+            }
 
-                }
+            dispatch_info = str(dispatch_info_dict)
+            dispatch_pub.publish(dispatch_info)
 
-                dispatch_info = str(dispatch_info_dict)
-                dispatch_pub.publish(dispatch_info)
-
-                rospy.sleep(0.5)
+            rospy.sleep(0.5)
         else
             pass
     
