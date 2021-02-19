@@ -255,7 +255,7 @@ class IotRosBridgeActionServer:
             msg_obj["cost"]='300'
 
         kwargs = {
-            "id": "Incoming Orders",
+            "id": "IncomingOrders",
             "Order ID": msg_obj["order_id"],
             "Order Date and Time": msg_obj["order_time"],
             "Item": msg_obj["item"],
@@ -264,8 +264,8 @@ class IotRosBridgeActionServer:
             "Latitude": msg_obj["lat"],
             "Longitude": msg_obj["lon"],
             "Priority": msg_obj["priority"],
-            "Unique ID": self._config_mqtt_unique_id,
-            "Team ID": "VB#1004",
+            "Unique Id": self._config_mqtt_unique_id,
+            "Team Id": "VB#1004",
             "Cost": msg_obj["cost"]
         }
         iot.publish_message_to_spreadsheet(**kwargs)
@@ -294,6 +294,8 @@ class IotRosBridgeActionServer:
         TODO
         """
         kwargs = eval(data.shippedData)
+        rospy.logwarn('\n\nSHIPPING UPDATE RECEIVED!\n\n')
+        rospy.logwarn(kwargs)
         iot.publish_message_to_spreadsheet(**kwargs)
         
 def main():

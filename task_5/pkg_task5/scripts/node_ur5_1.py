@@ -405,8 +405,8 @@ def main():
             print('\n\ni: ' + str(i) + ' j: ' + str(j) + '\n\n')
             color = ic.get_qr_data(ic.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
             
-            inv_obj['Team ID'] = 'VB#1004'
-            inv_obj['Unique ID'] = 'CeAhsAGA'
+            inv_obj['Team Id'] = 'VB#1004'
+            inv_obj['Unique Id'] = 'CeAhsAGA'
             inv_obj['id'] = 'Inventory'
 
             if color == 'red':
@@ -473,6 +473,7 @@ def main():
             package_info.packageName = 'Packagen'+str(i)+str(j)
             package_info.color = color
             package_info.city = order["City"]
+            package_info.orderid = order["Order ID"]
             '''The arm files are to be change'''
             
             if(count==0):
@@ -496,9 +497,9 @@ def main():
             color_pub.publish(package_info)
             
             dispatch_info_dict = {
-                'id' : 'Orders Dispatched',
-                'Team ID': order["Team ID"],
-                'Unique ID': order["Unique ID"],
+                'id' : 'OrdersDispatched',
+                'Team Id': order["Team Id"],
+                'Unique Id': order["Unique Id"],
                 'Order ID': order["Order ID"],
                 'City': order['City'],
                 'Item': order['Item'],

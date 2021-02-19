@@ -84,6 +84,10 @@ class Ur5Moveit:
         self._pkg_pickup_flag = False
 
         self.color_w = []
+        self.city_w = []
+        self.orderid_w = []
+
+        self.ship_pub = rospy.Publisher('topic_shipped_data', shippedMsg, queue_size = 10)
 
         rospy.loginfo('\033[94m' + " >>> Ur5Moveit init done." + '\033[0m')
 
@@ -235,11 +239,14 @@ class Ur5Moveit:
     def func_get_package_details(self, msg):
         self.color_w.append(msg.color)
         self.city_w.append(msg.city)
+        self.orderid_w.append(msg.orderid)
 
-    def func_orders_shipped(self, city, color):            
-        ship_obj['Team ID'] = 'VB#1004'
-        ship_obj['Unique ID'] = 'CeAhsAGA'
-        ship_obj['id'] = 'Orders Shipped'
+    def func_orders_shipped(self, city, color, orderid): 
+        ship_obj = {}           
+        ship_obj['Team Id'] = 'VB#1004'
+        ship_obj['Unique Id'] = 'CeAhsAGA'
+        ship_obj['Order ID'] = orderid
+        ship_obj['id'] = 'OrdersShipped'
         ship_obj['Shipped Quantity'] = '1'
         ship_obj['Shipped Date and Time'] = get_time_str()
 
@@ -266,7 +273,7 @@ class Ur5Moveit:
 
         str_ship_obj = str(ship_obj)
         rospy.sleep(2)
-        ship_pub.publish(str_ship_obj)
+        self.ship_pub.publish(str_ship_obj)
 
 def get_time_str():
     timestamp = int(time.time())
@@ -288,12 +295,11 @@ def main():
 
     rospy.Subscriber('/eyrc/vb/logical_camera_2', LogicalCameraImage, ur5.func_callback_logical_camera)
     rospy.Subscriber('/topic_package_details', packageMsg, ur5.func_get_package_details)
-    ship_pub = rospy.Publisher('topic_shipped_data', shippedMsg, queue_size = 10)
 
     count = 0
     color = "zero"
     arg_file_name = color+"_to_drop.yaml"
-    #ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+    ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
 
     while count<9:
         rospy.sleep(0.01)
@@ -310,36 +316,37 @@ def main():
             ur5.activate_vacuum_gripper(True)   # Activate gripper
             ur5.set_conveyor_belt_speed(100)
             arg_file_name = "drop_to_int.yaml"     
-            #ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
         
-            # if color == "red":
+            if color == "red":
 
-            #     arg_file_name = "int_to_"+color+".yaml"
-            #     ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name,  100)      # Go to bin
-            #     ur5.activate_vacuum_gripper(False)  # Deactivate gripper
+                arg_file_name = "int_to_"+color+".yaml"
+                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name,  100)      # Go to bin
+                ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
 
-            # elif color == "yellow":
-            #     ur5.set_conveyor_belt_speed(80)
-            #     arg_file_name = "int_to_"+color+".yaml"
-            #     ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
-            #     ur5.activate_vacuum_gripper(False)  # Deactivate gripper
+            elif color == "yellow":
+                ur5.set_conveyor_belt_speed(80)
+                arg_file_name = "int_to_"+color+".yaml"
+                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
+                ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
-            # elif color == "green":
+            elif color == "green":
 
-            #     arg_file_name = "int_to_"+color+".yaml"
-            #     ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
-            #     ur5.activate_vacuum_gripper(False)  # Deactivate gripper
+                arg_file_name = "int_to_"+color+".yaml"
+                ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
+                ur5.activate_vacuum_gripper(False)  # Deactivate gripper
 
-            ur5.color_w.pop(0)
             count = count + 1
             
             rospy.sleep(0.1)
             arg_file_name = color+"_to_drop.yaml"
-            # ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
+            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
             ur5.set_conveyor_belt_speed(100)    # Resume conveyor
-            ur5.func_orders_shipped(ur5.city_w[0],color)
-            ur5.color_city.pop(0)
+            ur5.func_orders_shipped(ur5.city_w[0],color,ur5.orderid_w[0])
+            ur5.color_w.pop(0)
+            ur5.city_w.pop(0)
+            ur5.orderid_w(0)
 
     del ur5
 
