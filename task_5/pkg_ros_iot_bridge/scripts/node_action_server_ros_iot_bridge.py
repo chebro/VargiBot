@@ -270,6 +270,8 @@ class IotRosBridgeActionServer:
         }
         iot.publish_message_to_spreadsheet(**kwargs)
         self._handle_incoming.publish(str(kwargs))
+        kwargs['id'] = 'Dashboard'
+        iot.publish_message_to_spreadsheet(**kwargs)
 
     def func_inventory_data_callback(self, data):
         """
@@ -288,7 +290,8 @@ class IotRosBridgeActionServer:
         rospy.logwarn('\n\nDISPATCH UPDATE RECEIVED!\n\n')
         rospy.logwarn(kwargs)
         iot.publish_message_to_spreadsheet(**kwargs)
-
+        kwargs['id'] = 'Dashboard'
+        iot.publish_message_to_spreadsheet(**kwargs)
     def func_shipped_data_callback(self, data):
         """
         TODO
@@ -297,7 +300,9 @@ class IotRosBridgeActionServer:
         rospy.logwarn('\n\nSHIPPING UPDATE RECEIVED!\n\n')
         rospy.logwarn(kwargs)
         iot.publish_message_to_spreadsheet(**kwargs)
-        
+        kwargs['id'] = 'Dashboard'
+        iot.publish_message_to_spreadsheet(**kwargs)
+
 def main():
     """
     Main Function
