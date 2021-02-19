@@ -275,6 +275,8 @@ class Ur5Moveit:
     def func_callback_topic_incoming_orders(self, data):
 
         incomingDict = eval(data.incomingData)
+        rospy.logwarn('\n\nATTENTION! NEW ORDER!\n\n')
+        rospy.logwarn(incomingDict)
 
         self._orders.insert(incomingDict)
 
@@ -383,7 +385,7 @@ def main():
 
     inv_pub = rospy.Publisher('topic_inventory_data', inventoryMsg, queue_size = 10)
     color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
-    dispatch_pub = rospy.Publisher('topic_dispatch_orders', dispatchMsg, queue_size = 10)
+    dispatch_pub = rospy.Publisher('topic_dispatch_data', dispatchMsg, queue_size = 10)
 
     rospy.Subscriber('/topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
     rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
@@ -430,7 +432,7 @@ def main():
 
             inv_obj['Storage Number'] = 'R'+str(i)+'C'+str(j)
             inv_obj['Quantity'] = 1
-            rospy.sleep(3)
+            rospy.sleep(1)
             str_inv_obj = str(inv_obj)
 
             inv_pub.publish(str_inv_obj)
@@ -507,6 +509,8 @@ def main():
                 'Dispatch Date and Time': get_time_str()
             }
 
+            rospy.logwarn('\n\nDISPATCHING THE FOLLOWING!\n\n')
+            rospy.logwarn(str(dispatch_info_dict))
             dispatch_info = str(dispatch_info_dict)
             dispatch_pub.publish(dispatch_info)
 

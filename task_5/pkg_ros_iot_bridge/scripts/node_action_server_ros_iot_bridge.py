@@ -276,6 +276,8 @@ class IotRosBridgeActionServer:
         TODO
         """
         kwargs = eval(data.inventoryData)
+        rospy.logwarn('\n\nINVENTORY UPDATE RECEIVED!\n\n')
+        rospy.logwarn(kwargs)
         iot.publish_message_to_spreadsheet(**kwargs)
 
     def func_dispatch_data_callback(self, data):
@@ -283,6 +285,8 @@ class IotRosBridgeActionServer:
         TODO
         """
         kwargs = eval(data.dispatchData)
+        rospy.logwarn('\n\nDISPATCH UPDATE RECEIVED!\n\n')
+        rospy.logwarn(kwargs)
         iot.publish_message_to_spreadsheet(**kwargs)
 
     def func_shipped_data_callback(self, data):
