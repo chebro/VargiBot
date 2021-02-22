@@ -518,8 +518,9 @@ def main():
             rospy.sleep(0.5)
             count = count + 1
         else:
-            pass
-    
+            if count > 8:
+                break
+            pass    
     #ur5.go_to_predefined_pose("allZeros")
     rospy.sleep(1)  #waiting for the arm to go to required position
 

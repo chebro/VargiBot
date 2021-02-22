@@ -170,8 +170,15 @@ class Ur5Moveit:
         """
         Callback Function for Logical Camera Subscription
         """
-        if msg.models and msg.models[-1].type != 'ur5':
+        flag = 0
+        for i in range(len(msg.models)): 
+            if msg.models[i].type != 'ur5':
+                flag = 1
+                break
+            else:
+                flag = 0
 
+        if flag:
             self._pkg_detect_flag = True
             self.i = msg.models[0].type[-2]
             self.j = msg.models[0].type[-1]
@@ -238,6 +245,8 @@ class Ur5Moveit:
 
     def func_get_package_details(self, msg):
         self.color_w.append(msg.color)
+        rospy.logwarn('\n\nCOLOR RECEIVED\n\n')
+        rospy.logwarn(msg.color)
         self.city_w.append(msg.city)
         self.orderid_w.append(msg.orderid)
 
@@ -257,19 +266,19 @@ class Ur5Moveit:
             ship_obj['Item'] = 'Medicine'
             ship_obj['Priority'] = 'HP'
             ship_obj['Cost'] = 300
-            ship_obj['Estimated Time of Delivery'] = get_time_str()
+            ship_obj['Estimated Time of Delivery'] = get_est_time_str(1)
 
         if color == 'yellow':
             ship_obj['Item'] = 'Food'
             ship_obj['Priority'] = 'MP'
             ship_obj['Cost'] = 200
-            ship_obj['Estimated Time of Delivery'] = get_time_str()
+            ship_obj['Estimated Time of Delivery'] = get_est_time_str(2)
 
         if color == 'green':
             ship_obj['Item'] = 'Clothes'
             ship_obj['Priority'] = 'LP'
             ship_obj['Cost'] = 100
-            ship_obj['Estimated Time of Delivery'] = get_time_str()
+            ship_obj['Estimated Time of Delivery'] = get_est_time_str(3)
 
         str_ship_obj = str(ship_obj)
         rospy.sleep(2)
@@ -279,7 +288,12 @@ def get_time_str():
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp)
     str_time = value.strftime('%Y-%m-%d %H:%M:%S')
+    return str_time
 
+def get_est_time_str(offset):
+    timestamp = int(time.time())
+    value = datetime.datetime.fromtimestamp(timestamp) + datetime.timedelta(offset)
+    str_time = value.strftime('%Y-%m-%d')
     return str_time
 
 def main():
@@ -303,10 +317,10 @@ def main():
 
     while count<9:
         rospy.sleep(0.01)
-        rospy.loginfo(count)
+        #rospy.loginfo(count)
 
         if ur5._pkg_detect_flag:
-
+            rospy.loginfo(count)
             rospy.sleep(0.6)                # Delay to reach centre
             ur5.set_conveyor_belt_speed(0)  # Stop belt
 
@@ -314,7 +328,7 @@ def main():
             ur5._pkg_detect_flag = False
             rospy.sleep(0.3)
             ur5.activate_vacuum_gripper(True)   # Activate gripper
-            ur5.set_conveyor_belt_speed(100)
+            ur5.set_conveyor_belt_speed(50)
             arg_file_name = "drop_to_int.yaml"     
             ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)
         
@@ -326,7 +340,7 @@ def main():
 
 
             elif color == "yellow":
-                ur5.set_conveyor_belt_speed(80)
+                #ur5.set_conveyor_belt_speed(80)
                 arg_file_name = "int_to_"+color+".yaml"
                 ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 100)      # Go to bin
                 ur5.activate_vacuum_gripper(False)  # Deactivate gripper
@@ -346,7 +360,7 @@ def main():
             ur5.func_orders_shipped(ur5.city_w[0],color,ur5.orderid_w[0])
             ur5.color_w.pop(0)
             ur5.city_w.pop(0)
-            ur5.orderid_w(0)
+            ur5.orderid_w.pop(0)
 
     del ur5
 
