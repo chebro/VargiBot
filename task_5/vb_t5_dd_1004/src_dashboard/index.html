@@ -119,18 +119,51 @@
 
             var json_data = {
                 "City": data.feed.entry[i].gsx$city.$t,
-                "OderID" : data.feed.entry[i].gsx$orderid.$t,
+                "OrderID" : data.feed.entry[i].gsx$orderid.$t,
                 "Item" : data.feed.entry[i].gsx$item.$t,
                 "Latitude": parseFloat(data.feed.entry[i].gsx$latitude.$t),
-                "Longitude": parseFloat(data.feed.entry[i].gsx$longitude.$t)
+                "Longitude": parseFloat(data.feed.entry[i].gsx$longitude.$t),
+                "Dispathed": data.feed.entry[i].gsx$orderdispatched.$t,
+                "Shipped": data.feed.entry[i].gsx$ordershipped.$t
             };
             jsonDataObject.push(json_data);
+
+            var redIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                iconAnchor: [13, 40]
+            });
+
+
+            var yellowIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
+                iconAnchor: [13, 40]
+            });
+
+
+            var greenIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                iconAnchor: [13, 40]
+            });            
+
                 
             for (var j = 0; j < jsonDataObject.length; j++) {
-                var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude), parseFloat(jsonDataObject[j].Longitude)));
-                marker.bindPopup(jsonDataObject[j].City, {
-                        autoClose: false
-                });
+
+                if(jsonDataObject[j].Dispathed=='YES'){
+                  if(jsonDataObject[j].Shipped=='YES'){
+                    var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude), parseFloat(jsonDataObject[j].Longitude)), 
+                      {icon: greenIcon});
+                    
+                    } else{
+                    var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude), parseFloat(jsonDataObject[j].Longitude)),
+                        {icon: yellowIcon});
+                  }
+                } else{
+                    var marker = L.marker(L.latLng(parseFloat(jsonDataObject[j].Latitude), parseFloat(jsonDataObject[j].Longitude)),
+                        {icon: redIcon});
+
+                }
+                marker.bindPopup(jsonDataObject[j].City).openPopup();
+
                 map.addLayer(marker);
                 marker.on('click', onClick_Marker)
                 // Attach the corresponding JSON data to your marker:
@@ -140,14 +173,14 @@
                         var marker = e.target;
                         popup = L.popup()
                         .setLatLng(marker.getLatLng())
-                        .setContent("Order ID: " + marker.myJsonData.OderID + " || Item: " +   marker.myJsonData.Item)
+                        .setContent("City: " + marker.myJsonData.City + " || Order ID: " + marker.myJsonData.OrderID + " || Dispathed: " +   marker.myJsonData.Dispathed + " || Shipped: " + marker.myJsonData.Shipped)
                         .openOn(map);
                     }
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map); 
-                    
+                  
 
                 }
             }
@@ -172,7 +205,7 @@
       console.log(data.feed.entry);
       for (var i = 0; i < data.feed.entry.length; ++i) {
         var json_data = {
-          "OderID" : data.feed.entry[i].gsx$orderid.$t,
+          "OrderID" : data.feed.entry[i].gsx$orderid.$t,
           "TimeTaken": parseFloat(data.feed.entry[i].gsx$timetaken.$t),
           "Priority": data.feed.entry[i].gsx$priority.$t
           };
@@ -194,11 +227,19 @@
 
       // Converting Json Object to JavaScript Array
       for(var j in jsonDataObject){
-          graph_arr.push([jsonDataObject[j].OderID,jsonDataObject[j].TimeTaken, bar_color[j]]);
+          graph_arr.push([jsonDataObject[j].OrderID,jsonDataObject[j].TimeTaken, bar_color[j]]);
       }
       var graphArray_Final = google.visualization.arrayToDataTable(graph_arr);
     
       var data = new google.visualization.DataView(graphArray_Final); 
+
+       var view = new google.visualization.DataView(data);
+      view.setColumns([0, 1,
+                       { calc: "stringify",
+                         sourceColumn: 1,
+                         type: "string",
+                         role: "annotation" },
+                       2]);
 
       var options = {
         title: 'Time Taken for items to be Shipped',
@@ -207,7 +248,7 @@
         legend: { position: "none" },
       };
       var chart = new google.visualization.ColumnChart(document.getElementById('column_chart'));
-      chart.draw(data, options);
+      chart.draw(view, options);
     });  
   }
     
