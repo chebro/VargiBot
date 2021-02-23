@@ -1,101 +1,95 @@
 #! /usr/bin/env python
 
+"""
+This program intends to control UR5_1 arm.
+UR5_1 arm function: To sort the packages according to their
+                    respective colours.
+"""
+
+import datetime
+import time
+import sys
+import yaml
+import rospkg
+
+from pyzbar.pyzbar import decode
+import numpy as np
+from cv_bridge import CvBridge, CvBridgeError
+
 import rospy
 import moveit_commander
 import moveit_msgs.msg
-import geometry_msgs.msg
 import actionlib
-import rospkg
-import cv2
 
-import datetime
-import json
-import yaml
-import os
-import math
-import time
-import sys
-import copy
-
-import tf2_ros
-import tf2_msgs.msg
-
-from std_srvs.srv import Empty
-from pkg_vb_sim.srv import vacuumGripper
-from pkg_vb_sim.srv import conveyorBeltPowerMsg
+from pkg_vb_sim.srv import vacuumGripper, conveyorBeltPowerMsg
 from pkg_vb_sim.msg import LogicalCameraImage
 
-from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from pkg_task5.msg import packageMsg
-from pkg_task5.msg import inventoryMsg
-from pkg_task5.msg import incomingMsg
-from pkg_task5.msg import dispatchMsg
+from pkg_task5.msg import packageMsg, incomingMsg
 
-from cv_bridge import CvBridge, CvBridgeError
-from pyzbar.pyzbar import decode
-import numpy as np
+from pkg_ros_iot_bridge.msg import msgRosIotAction, msgRosIotGoal, msgRosIotResult
 
-class PriorityQueue: 
-    def __init__(self): 
-        self.queue = [] 
-  
-    def __str__(self): 
-        return ' '.join([str(i) for i in self.queue]) 
-  
-    # for checking if the queue is empty 
-    def isEmpty(self): 
+class PriorityQueue(object):
+    def __init__(self):
+        self.queue = []
+
+    def __str__(self):
+        return ' '.join([str(i) for i in self.queue])
+    # for checking if the queue is empty
+    def is_empty(self):
         return len(self.queue) == 0
-  
-    # for inserting an element in the queue 
-    def insert(self, data): 
-        self.queue.append(data) 
-  
-    # for popping an element based on Priority 
-    def delete(self): 
-        try: 
-            max = 0
-            for i in range(len(self.queue)): 
-                if self.queue[i]["Cost"] > self.queue[max]["Cost"]: 
-                    max = i 
-                elif self.queue[i]["Cost"] == self.queue[max]["Cost"]:
+
+    # for inserting an element in the queue
+    def insert(self, data):
+        self.queue.append(data)
+    # for popping an element based on Priority
+    def delete(self):
+        try:
+            max_index = 0
+            for i in range(len(self.queue)):
+                if self.queue[i]["Cost"] > self.queue[max_index]["Cost"]:
+                    max_index = i
+                elif self.queue[i]["Cost"] == self.queue[max_index]["Cost"]:
                     if self.queue[i]['Order Date and Time'] < self.queue[i]['Order Date and Time']:
-                        max = i
-            item = self.queue[max] 
-            del self.queue[max] 
-            return item 
-        except IndexError: 
-            print() 
-            exit() 
+                        max_index = i
+            item = self.queue[max_index]
+            del self.queue[max_index]
+            return item
+        except IndexError:
+            print()
+            exit()
 
-
-class Ur5Moveit:
+class Ur5Moveit(object):
     """
     Constructor
     """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, arg_robot_name):
 
         rospy.init_node('node_ur5_1', anonymous=True)
+
+        self._ac_ros_iot = actionlib.ActionClient('/action_ros_iot', msgRosIotAction)
 
         self._robot_ns = '/'  + arg_robot_name
         self._planning_group = "manipulator"
 
         self._commander = moveit_commander.roscpp_initialize(sys.argv)
-        self._robot = moveit_commander.RobotCommander(robot_description= self._robot_ns + "/robot_description", ns=self._robot_ns)
+        self._robot = moveit_commander.RobotCommander(
+        	   robot_description=self._robot_ns + "/robot_description", ns=self._robot_ns)
         self._scene = moveit_commander.PlanningSceneInterface(ns=self._robot_ns)
-        self._group = moveit_commander.MoveGroupCommander(self._planning_group, robot_description= self._robot_ns + "/robot_description", ns=self._robot_ns)
-        self._display_trajectory_publisher = rospy.Publisher( self._robot_ns + '/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=1)
-        self._exectute_trajectory_client = actionlib.SimpleActionClient( self._robot_ns + '/execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
+        self._group = moveit_commander.MoveGroupCommander(
+        	   self._planning_group, robot_description=self._robot_ns + "/robot_description",
+        	   ns=self._robot_ns)
+        self._display_trajectory_publisher = rospy.Publisher(
+        	   self._robot_ns + '/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory,
+        	   queue_size=1)
+        self._exectute_trajectory_client = actionlib.SimpleActionClient(
+        	   self._robot_ns + '/execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
         self._exectute_trajectory_client.wait_for_server()
 
         self._planning_frame = self._group.get_planning_frame()
         self._eef_link = self._group.get_end_effector_link()
         self._group_names = self._robot.get_group_names()
-
-        #Box names
-        self._box_name = [ ['', '', '', ''],
-                        ['', '', '', ''],
-                        ['', '', '', '']]
 
         #All the box coordinates:
 
@@ -106,10 +100,6 @@ class Ur5Moveit:
         #incoming orders queue
 
         self._orders = PriorityQueue()
-
-        #Setup for tf
-        self._tfBuffer = tf2_ros.Buffer()
-        self._listener = tf2_ros.TransformListener(self._tfBuffer)
 
         # Attribute to store computed trajectory by the planner
         self._computed_plan = ''
@@ -125,85 +115,43 @@ class Ur5Moveit:
             '\033[94m' + "Group Names: {}".format(self._group_names) + '\033[0m')
 
 
-        rp = rospkg.RosPack()
-        self._pkg_path = rp.get_path('pkg_moveit_examples')
+        relative_path = rospkg.RosPack()
+        self._pkg_path = relative_path.get_path('pkg_moveit_examples')
         self._file_path = self._pkg_path + '/config/'
-        rospy.loginfo( "Package Path: {}".format(self._file_path) )
+        rospy.loginfo("Package Path: {}".format(self._file_path))
 
+        param_config_iot = rospy.get_param('config_iot')
+        self._config_inventory_pub_topic = param_config_iot['http']['inventory']
+        self._config_dispatch_pub_topic = param_config_iot['http']['dispatch']
+        self._goal_handles = {}
+        self._ac_ros_iot.wait_for_server()
+
+        rospy.loginfo("Action server is up, we can send new goals!")
 
         rospy.loginfo('\033[94m' + " >>> Ur5Moveit init done." + '\033[0m')
 
-    def clear_octomap(self):
-        clear_octomap_service_proxy = rospy.ServiceProxy(self._robot_ns + "/clear_octomap", Empty)
-        return clear_octomap_service_proxy()
-
-    def moveit_play_planned_path_from_file(self, arg_file_path, arg_file_name):
+    def play_planned_path_from_file(self, arg_file_path, arg_file_name):
         """
         Loading the trajectories from the file and executing
         """
         file_path = arg_file_path + arg_file_name
 
         with open(file_path, 'r') as file_open:
-          plan = yaml.load(file_open)
+            plan = yaml.load(file_open)
 
         ret = self._group.execute(plan)
 
         return ret
 
-    def moveit_hard_play_planned_path_from_file(self, arg_file_path, arg_file_name, arg_max_attempts):
+    def hard_play_planned_path_from_file(self, arg_file_path, arg_file_name, arg_max_attempts):
         number_attempts = 0
         flag_success = False
 
-        while ( (number_attempts <= arg_max_attempts) and (flag_success is False) ):
+        while ((number_attempts <= arg_max_attempts) and (flag_success is False)):
             number_attempts += 1
-            flag_success = self.moveit_play_planned_path_from_file(arg_file_path, arg_file_name)
-            rospy.logwarn("attempts: {}".format(number_attempts) )
+            flag_success = self.play_planned_path_from_file(arg_file_path, arg_file_name)
+            rospy.logwarn("attempts: {}".format(number_attempts))
         return True
-
-    def attach_box(self, i, j, timeout=4):
-        """
-        Attaching Objects to the Robot
-        """
-        grasping_group = "manipulator"
-        touch_links = self._robot.get_link_names(group=grasping_group)
-        self._scene.attach_box(self._eef_link, self._box_name[i][j], touch_links=touch_links)
-        rospy.loginfo('The box attached')
-
-    def detach_box(self, i, j, timeout=4):
-        """
-        Detaching Objects from the Robot
-        """
-        self._scene.remove_attached_object(self._eef_link, name=self._box_name[i][j])
-
-    def set_joint_angles(self, arg_list_joint_angles, arg_file_path, arg_file_name):
-        """
-        Plan and Execute : Set Joint Angles
-        """
-        list_joint_values = self._group.get_current_joint_values()
-        rospy.loginfo('\033[94m' + ">>> Current Joint Values:" + '\033[0m')
-        rospy.loginfo(list_joint_values)
-
-        self._group.set_joint_value_target(arg_list_joint_angles)
-        plan = self._group.plan()
-        self.save_trag(arg_file_path, arg_file_name, plan)
-        flag_plan = self._group.go(wait=True)
-
-        list_joint_values = self._group.get_current_joint_values()
-        rospy.loginfo('\033[94m' + ">>> Final Joint Values:" + '\033[0m')
-        rospy.loginfo(list_joint_values)
-
-        pose_values = self._group.get_current_pose().pose
-        rospy.loginfo('\033[94m' + ">>> Final Pose:" + '\033[0m')
-        rospy.loginfo(pose_values)
-
-        if flag_plan:
-            rospy.loginfo(
-                '\033[94m' + ">>> set_joint_angles() Success" + '\033[0m')
-        else:
-            rospy.logerr(
-                '\033[94m' + ">>> set_joint_angles() Failed." + '\033[0m')
-
-        return flag_plan
 
     def go_to_predefined_pose(self, arg_pose_name):
         """
@@ -225,61 +173,64 @@ class Ur5Moveit:
         else:
             self.presence_of_package = True
 
-
-    def activate_vacuum_gripper(self, state):
-        """
-        Enable/Disable Gripper Module
-        """
-        if state:
-          rospy.loginfo('Activated.')
-        else:
-          rospy.loginfo('Deactivated')
-        rospy.wait_for_service('/eyrc/vb/ur5/activate_vacuum_gripper/ur5_1')
-
-
-        try:
-            activate_vacuum_gripper = rospy.ServiceProxy('/eyrc/vb/ur5/activate_vacuum_gripper/ur5_1',
-                                                         vacuumGripper)
-            resp1 = activate_vacuum_gripper(state)
-            return resp1
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" + e
-
-
-    def activate_conveyor_belt(self, state):
-        """
-        Enable/Disable Gripper Module
-        """
-        rospy.loginfo('Activated conveyor belt.')
-        rospy.wait_for_service('/eyrc/vb/conveyor/set_power')
-
-
-        try:
-            activate_vacuum_gripper = rospy.ServiceProxy('/eyrc/vb/conveyor/set_power',
-                                                         conveyorBeltPowerMsg)
-            resp1 = activate_vacuum_gripper(state)
-            return resp1
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" + e
-
-    def hard_set_joint_angles(self, arg_list_joint_angles, arg_max_attempts, arg_file_path, arg_file_name):
-
-        number_attempts = 0
-        flag_success = False
-
-        while ( (number_attempts <= arg_max_attempts) and  (flag_success is False) ):
-            number_attempts += 1
-            flag_success = self.set_joint_angles(arg_list_joint_angles, arg_file_path, arg_file_name)
-            rospy.logwarn("attempts: {}".format(number_attempts) )
-
     def func_callback_topic_incoming_orders(self, data):
 
-        incomingDict = eval(data.incomingData)
+        incoming_dict = eval(data.incomingData)
         rospy.logwarn('\n\nATTENTION! NEW ORDER!\n\n')
-        rospy.logwarn(incomingDict)
+        rospy.logwarn(incoming_dict)
 
-        self._orders.insert(incomingDict)
+        self._orders.insert(incoming_dict)
 
+    def send_spreadsheet_pub_goal(self, arg_protocol, arg_mode, arg_topic, arg_message):
+        """
+        Function to send Goals to Action Server: /action_ros_iot
+        """
+        goal = msgRosIotGoal()
+
+        goal.protocol = arg_protocol
+        goal.mode = arg_mode
+        goal.topic = arg_topic
+        goal.message = arg_message
+
+        rospy.loginfo("Sending HTTP Goal.")
+
+        goal_handle = self._ac_ros_iot.send_goal(goal, self.on_transition, None)
+        return goal_handle
+
+    def on_transition(self, goal_handle):
+        """
+        This function will be called when there is a change of state in the Action Client
+        State Machine : /action_ros_iot
+        """
+        result = msgRosIotResult()
+
+        index = 0
+        for i in self._goal_handles:
+            if self._goal_handles[i] == goal_handle:
+                index = i
+                break
+
+        rospy.loginfo("Transition Callback. Client Goal Handle #: " + str(index))
+        rospy.loginfo("Comm. State: " + str(goal_handle.get_comm_state()))
+        rospy.loginfo("Goal Status: " + str(goal_handle.get_goal_status()))
+
+        # if (Comm State == ACTIVE)
+        if goal_handle.get_comm_state() == 2:
+            rospy.loginfo(": Goal " + str(index) + " is active.")
+
+        # if (Comm State == DONE)
+        if goal_handle.get_comm_state() == 7:
+            rospy.loginfo(str(index) + ": Goal is DONE")
+            rospy.loginfo(goal_handle.get_terminal_state())
+
+            # get_result() gets the result produced by the Action Server
+            result = goal_handle.get_result()
+            rospy.loginfo(result.flag_success)
+
+            if result.flag_success:
+                rospy.loginfo("Goal Suceeded. Client Goal Handle #: " + str(index))
+            else:
+                rospy.loginfo("Goal failed. Client Goal Handle #: " + str(index))
 
     def __del__(self):
         """
@@ -289,69 +240,95 @@ class Ur5Moveit:
         rospy.loginfo(
             '\033[94m' + "Object of class Ur5Moveit Deleted." + '\033[0m')
 
-class Camera2D:
+class Camera2D(object):
     """docstring for Camera2D"""
     def __init__(self):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/eyrc/vb/camera_1/image_raw", Image,self.callback)
+        self.image_sub = rospy.Subscriber(
+        	   "/eyrc/vb/camera_1/image_raw", Image, self.func_callback_2D_camera)
         self.image = []
 
     def get_qr_data(self, arg_image):
         qr_result = decode(arg_image)
 
-        if ( len( qr_result ) > 0):
+        if qr_result:
             rospy.logwarn(qr_result[0].data)
-            return (qr_result[0].data)
-        else :
+            color = qr_result[0].data
+        else:
           # setting values for base colors
-            y = arg_image[:, :, :2]
-            g = arg_image[:, :, 1:2]
-            r = arg_image[:, :, 2:]
+            y_color = arg_image[:, :, :2]
+            g_color = arg_image[:, :, 1:2]
+            r_color = arg_image[:, :, 2:]
 
             # computing the mean
-            y_mean = np.mean(y)
-            g_mean = np.mean(g)
-            r_mean = np.mean(r)
+            y_mean = np.mean(y_color)
+            g_mean = np.mean(g_color)
+            r_mean = np.mean(r_color)
 
             # displaying the most prominent color
             if (g_mean > r_mean and g_mean > y_mean):
                 rospy.logwarn('\n\nDETECTED GREEN\n\n')
-                return 'green'
+                color = 'green'
             elif (y_mean > r_mean and y_mean > g_mean):
                 rospy.logwarn('\n\nDETECTED YELLOW\n\n')
-                return 'yellow'
+                color = 'yellow'
             elif (r_mean > y_mean and r_mean > g_mean):
                 rospy.logwarn('\n\nDETECTED RED\n\n')
-                return 'red'
+                color = 'red'
             else:
-                return 'NA'
+                color = 'NA'
                 rospy.logwarn('\n\nDETECTED NIL\n\n')
 
+        return color
 
-    def callback(self,data):
+    def func_callback_2D_camera(self, data):
         try:
-          cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-        except CvBridgeError as e:
-          rospy.logerr(e)
-
-        (rows,cols,channels) = cv_image.shape
+            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        except CvBridgeError as error:
+            rospy.logerr(error)
 
         image = cv_image
 
-        # Resize a 720x1280 image to 360x640 to fit it on the screen
-        resized_image = cv2.resize(image, (720/2, 1280/2))
-
-        req_imag = image[ 301:900, 100:600, :]
+        req_imag = image[301:900, 100:600, :]
 
         self.image = req_imag
-        cv2.imshow("/eyrc/vb/camera_1/image_raw", resized_image)
-
-        cv2.waitKey(3)
 
     def __del__(self):
         rospy.loginfo('Information Received.')
 
-  
+def activate_vacuum_gripper(state):
+    """
+    Enable/Disable Gripper Module
+    """
+    rospy.wait_for_service('/eyrc/vb/ur5/activate_vacuum_gripper/ur5_1')
+    try:
+        activate_vacuum_gripper_service = rospy.ServiceProxy(
+            '/eyrc/vb/ur5/activate_vacuum_gripper/ur5_1', vacuumGripper
+            )
+        res = activate_vacuum_gripper_service(state)
+        return res
+    except rospy.ServiceException as err:
+        print "Service call failed: %s" + err
+
+def set_conveyor_belt_speed(speed):
+    """
+    Control Conveyor Belt Speed
+    This function allows us to control the speed of the conveyor belt
+    using the service /eyrc/vb/conveyor/set_power.
+    Parameter:
+        speed(int): This value ranges from 0-100. Input value is
+                    directly proportional to power set.
+    Returns:
+        The service call's output is reflected in the world's conveyor belt.
+    """
+    rospy.wait_for_service('/eyrc/vb/conveyor/set_power')
+    try:
+        set_conveyor_belt_speed_value = rospy.ServiceProxy('/eyrc/vb/conveyor/set_power',
+                                                           conveyorBeltPowerMsg)
+        res = set_conveyor_belt_speed_value(speed)
+        return res
+    except rospy.ServiceException as err:
+        print "Service call failed: %s" + err
 
 def get_sku_str():
     timestamp = int(time.time())
@@ -372,23 +349,22 @@ def main():
     """
     Main Function
     """
+    relative_path = rospkg.RosPack()
 
-    rp = rospkg.RosPack()
-
-    arg_package_path = rp.get_path('pkg_task5')
+    arg_package_path = relative_path.get_path('pkg_task5')
     arg_file_path = arg_package_path + '/config/ur5_1_saved_trajectories/'
 
-    ic = Camera2D()
+    two_dim_camera = Camera2D()
     ur5 = Ur5Moveit('ur5_1')
 
     rospy.sleep(5)
 
-    inv_pub = rospy.Publisher('topic_inventory_data', inventoryMsg, queue_size = 10)
-    color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size = 10)
-    dispatch_pub = rospy.Publisher('topic_dispatch_data', dispatchMsg, queue_size = 10)
+    color_pub = rospy.Publisher('topic_package_details', packageMsg, queue_size=10)
 
-    rospy.Subscriber('/topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
-    rospy.Subscriber('/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
+    rospy.Subscriber(
+    	   '/topic_incoming_orders', incomingMsg, ur5.func_callback_topic_incoming_orders)
+    rospy.Subscriber(
+    	   '/eyrc/vb/logical_camera_1', LogicalCameraImage, ur5.func_callback_topic_logical_camera_1)
 
     """
     Inventory data publisher.
@@ -402,9 +378,8 @@ def main():
 
     for i in range(3):
         for j in reversed(range(3)):
-            print('\n\ni: ' + str(i) + ' j: ' + str(j) + '\n\n')
-            color = ic.get_qr_data(ic.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
-            
+            color = two_dim_camera.get_qr_data(
+            	   two_dim_camera.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
             inv_obj['Team Id'] = 'VB#1004'
             inv_obj['Unique Id'] = 'CeAhsAGA'
             inv_obj['id'] = 'Inventory'
@@ -432,28 +407,28 @@ def main():
 
             inv_obj['Storage Number'] = 'R'+str(i)+'C'+str(j)
             inv_obj['Quantity'] = 1
-            rospy.sleep(1)
-            str_inv_obj = str(inv_obj)
+            rospy.sleep(1.5)
+            inv_info = str(inv_obj)
 
-            inv_pub.publish(str_inv_obj)
-            
+            inv_goal_handle = ur5.send_spreadsheet_pub_goal("http",
+                                                            "pub",
+                                                            ur5._config_inventory_pub_topic,
+                                                            inv_info)
+            key = str(len(ur5._goal_handles))
+            ur5._goal_handles[key] = inv_goal_handle
+            rospy.loginfo('Goal ' + key + ' Sent')
 
-    rospy.logwarn(red)
-    rospy.logwarn(green)
-    rospy.logwarn(yellow)
-
-    ur5.activate_conveyor_belt(100)
+    set_conveyor_belt_speed(100)
     package_info = packageMsg()
-    dispatch_info = dispatchMsg()
 
     count = 0
 
     while not rospy.is_shutdown():
 
-        if not ur5._orders.isEmpty() and count<9:
+        if not ur5._orders.is_empty() and count < 9:
 
             order = ur5._orders.delete()
-            rospy.logwarn(order)
+            rospy.logwarn(ur5._orders)
 
             if order["Priority"] == 'HP':
                 (i, j) = red[0]
@@ -475,27 +450,25 @@ def main():
             package_info.city = order["City"]
             package_info.orderid = order["Order ID"]
             '''The arm files are to be change'''
-            
-            if(count==0):
+
+            if count == 0:
                 arg_file_name = 'zero_to_packagen' + str(i) + str(j) + '.yaml'
             else:
                 arg_file_name = 'drop_to_packagen' + str(i) + str(j) + '.yaml'
-            
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 30)
+
+            ur5.hard_play_planned_path_from_file(arg_file_path, arg_file_name, 30)
             rospy.logwarn('\n\nArm is going to ' + str(i)+ str(j)+'\n\n')
-            ur5.attach_box(i = j, j = i)
-            ur5.activate_vacuum_gripper(True)
+            activate_vacuum_gripper(True)
             rospy.sleep(0.5)
 
             while ur5.presence_of_package:          #Avoiding: Package being placed over a package
                 rospy.sleep(1)
-            
+
             arg_file_name = 'packagen' + str(i) + str(j) + '_to_drop.yaml'
-            ur5.moveit_hard_play_planned_path_from_file(arg_file_path, arg_file_name, 30)
-            ur5.activate_vacuum_gripper(False)
-            ur5.detach_box(i = j, j = i)
+            ur5.hard_play_planned_path_from_file(arg_file_path, arg_file_name, 30)
+            activate_vacuum_gripper(False)
             color_pub.publish(package_info)
-            
+
             dispatch_info_dict = {
                 'id' : 'OrdersDispatched',
                 'Team Id': order["Team Id"],
@@ -513,21 +486,26 @@ def main():
             rospy.logwarn('\n\nDISPATCHING THE FOLLOWING!\n\n')
             rospy.logwarn(str(dispatch_info_dict))
             dispatch_info = str(dispatch_info_dict)
-            dispatch_pub.publish(dispatch_info)
+            disp_goal_handle = ur5.send_spreadsheet_pub_goal("http",
+                                                             "pub",
+                                                             ur5._config_dispatch_pub_topic,
+                                                             dispatch_info)
+            disp_goal_key = str(len(ur5._goal_handles))
+            ur5._goal_handles[disp_goal_key] = disp_goal_handle
+            rospy.loginfo('Goal ' + disp_goal_key + ' Sent')
 
             rospy.sleep(0.5)
             count = count + 1
         else:
             if count > 8:
                 break
-            pass    
+            pass
     #ur5.go_to_predefined_pose("allZeros")
     rospy.sleep(1)  #waiting for the arm to go to required position
 
     del ur5
 
-    del ic
+    del two_dim_camera
 
 if __name__ == '__main__':
     main()
-

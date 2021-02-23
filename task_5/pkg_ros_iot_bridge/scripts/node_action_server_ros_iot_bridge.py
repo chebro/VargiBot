@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 """
-ROS Node - ROS/IoT Bridge
+ROS/IoT Bridge
+This program intends act as a bridge bwtween ROS and IoT.
+MQTT/HTTP requests are received/sent here.
 """
 
 import threading
@@ -9,9 +11,6 @@ import json
 import rospy
 import actionlib
 
-from pkg_task5.msg import inventoryMsg
-from pkg_task5.msg import shippedMsg
-from pkg_task5.msg import dispatchMsg
 from pkg_task5.msg import incomingMsg
 from pkg_ros_iot_bridge.msg import msgRosIotAction
 from pkg_ros_iot_bridge.msg import msgRosIotResult
@@ -19,10 +18,11 @@ from pkg_ros_iot_bridge.msg import msgRosIotResult
 from pyiot import iot
 
 
-class IotRosBridge:
+class IotRosBridge(object):
     """
-    ROS/Iot Bridge Class : MQTT Sub + Spreadsheet Pub
+    ROS/Iot Bridge Class : Performs MQTT Sub + Spreadsheet Pub
     """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self._as = actionlib.ActionServer('/action_ros_iot',
                                           msgRosIotAction,
@@ -35,10 +35,15 @@ class IotRosBridge:
         self._config_mqtt_server_url = param_config_iot['mqtt']['server_url']
         self._config_mqtt_server_port = param_config_iot['mqtt']['server_port']
         self._config_mqtt_qos = param_config_iot['mqtt']['qos']
-        self._config_mqtt_spread_sheet_id = param_config_iot['mqtt']['spread_sheet_id']
         self._config_mqtt_incoming_orders = param_config_iot['mqtt']['incoming_orders']
 
-        self._handle_incoming_orders = rospy.Publisher('/topic_incoming_orders',
+        self._config_mqtt_sub_cb_ros_topic = param_config_iot['mqtt']['sub_cb_ros_topic']
+
+        self._config_http_inventory_pub = param_config_iot['http']['inventory']
+        self._config_http_dispatch_pub = param_config_iot['http']['dispatch']
+        self._config_http_shipped_pub = param_config_iot['http']['shipped']
+
+        self._handle_incoming_orders = rospy.Publisher(self._config_mqtt_sub_cb_ros_topic,
                                                        incomingMsg,
                                                        queue_size=10)
 
@@ -56,10 +61,95 @@ class IotRosBridge:
         self._as.start()
         rospy.loginfo("Started ROS-IoT Bridge Action Server")
 
+    def on_goal(self, goal_handle):
+        """
+        Callback Function
+        This function will be called when Action Server receives a Goal.
+        Parameter:
+            goal_handle(object): Goal handler for the incoming goal.
+        """
+        goal = goal_handle.get_goal()
+
+        rospy.loginfo("Received new goal from Client")
+        rospy.loginfo(goal)
+
+        # Validate incoming goal parameters
+        if goal.protocol == "http":
+
+            if (goal.mode == "pub") or (goal.mode == "sub"):
+                goal_handle.set_accepted()
+
+                # Start a new thread to process new goal from the client
+                thread = threading.Thread(name="worker",
+                                          target=self.process_goal,
+                                          args=(goal_handle,))
+                thread.start()
+
+            else:
+                goal_handle.set_rejected()
+                return
+
+        else:
+            goal_handle.set_rejected()
+            return
+
+    def process_goal(self, goal_handle):
+        """
+        Goal Processing Function
+        This function is called is a separate thread to process Goal
+        Parameter:
+            goal_handle(object): Goal handler for the incoming goal.
+        """
+        result = msgRosIotResult()
+
+        goal_id = goal_handle.get_goal_id()
+        rospy.loginfo("Processing goal : " + str(goal_id.id))
+
+        goal = goal_handle.get_goal()
+
+        if (goal.protocol == "http") and (goal.mode == "pub"):
+
+            rospy.logwarn("HTTP PUB Goal ID: " + str(goal_id.id))
+            rospy.logwarn(goal.topic + " > " + goal.message)
+
+            if goal.topic == self._config_http_inventory_pub:
+                http_status = func_inventory_data_callback(goal.message)
+
+            if goal.topic == self._config_http_dispatch_pub:
+                http_status = func_dispatch_data_callback(goal.message)
+
+            if goal.topic == self._config_http_shipped_pub:
+                http_status = func_shipped_data_callback(goal.message)
+
+        if http_status == 0:
+            rospy.loginfo("HTTP requests were successfully sent!")
+            result.flag_success = True
+        else:
+            rospy.loginfo("HTTP requests failed")
+            result.flag_success = False
+
+        rospy.loginfo("Send goal result to client")
+
+        if result.flag_success:
+            rospy.loginfo("Succeeded")
+            goal_handle.set_succeeded(result)
+        else:
+            rospy.loginfo("Goal Failed. Aborting.")
+            goal_handle.set_aborted(result)
+
+        rospy.loginfo("Goal ID: " + str(goal_id.id) + " Goal Processing Done.")
+
     def func_incoming_order_callback(self, client, userdata, message):
         """
-        Callback Function : Triggers on Receiving an Incoming Order
+        Callback Function
+        This method is triggered when there is an incoming order.
+        Parameters:
+            client(string): Information regarding the MQTT client.
+            userdata(string): Information regarding the userdata (if any).
+            message(string): Contains the MQTT message.
         """
+        rospy.loginfo(client)
+        rospy.loginfo(userdata)
         payload = str(message.payload.decode("utf-8"))
         msg_obj = json.loads(payload)
 
@@ -98,156 +188,75 @@ class IotRosBridge:
 
         iot.publish_to_spreadsheet(**kwargs)
 
-    def on_goal(self, goal_handle):
-        """
-        This function will be called when Action Server receives a Goa
-        """
-        goal = goal_handle.get_goal()
-
-        rospy.loginfo("Received new goal from Client")
-        rospy.loginfo(goal)
-
-        # Validate incoming goal parameters
-        if goal.protocol == "mqtt":
-
-            if (goal.mode == "pub") or (goal.mode == "sub"):
-                goal_handle.set_accepted()
-
-                # Start a new thread to process new goal from the client
-                thread = threading.Thread(name="worker",
-                                          target=self.process_goal,
-                                          args=(goal_handle,))
-                thread.start()
-
-            else:
-                goal_handle.set_rejected()
-                return
-
-        else:
-            goal_handle.set_rejected()
-            return
-
-    def process_goal(self, goal_handle):
-        """
-        This function is called is a separate thread to process Goal
-        """
-
-        flag_success = False
-        result = msgRosIotResult()
-
-        goal_id = goal_handle.get_goal_id()
-        rospy.loginfo("Processing goal : " + str(goal_id.id))
-
-        goal = goal_handle.get_goal()
-
-        # Goal Processing
-        if goal.protocol == "mqtt":
-            rospy.logwarn("MQTT")
-
-            if goal.mode == "pub":
-                rospy.logwarn("MQTT PUB Goal ID: " + str(goal_id.id))
-
-                rospy.logwarn(goal.topic + " > " + goal.message)
-
-                ret = iot.mqtt_publish(self._config_mqtt_server_url,
-                                       self._config_mqtt_server_port,
-                                       goal.topic,
-                                       goal.message,
-                                       self._config_mqtt_qos)
-
-                if ret == 0:
-                    rospy.loginfo("MQTT Publish Successful.")
-                    result.flag_success = True
-                    msg_split = goal.message.split(",")
-                    result_x = msg_split[0].split("(")[1]
-                    result_y = msg_split[1]
-                    result_theta = msg_split[2].split(")")[0]
-                    rospy.logwarn('MESSAGE IMP: ' +result_x+result_y+result_theta)
-                    iot.publish_to_spreadsheet(turtle_x=result_x,
-                                               turtle_y=result_y,
-                                               turtle_theta=result_theta)
-                else:
-                    rospy.logerr("MQTT Failed to Publish")
-                    result.flag_success = False
-
-            elif goal.mode == "sub":
-                rospy.logwarn("MQTT SUB Goal ID: " + str(goal_id.id))
-                rospy.logwarn(goal.topic)
-
-                ret = iot.mqtt_subscribe_thread_start(self.mqtt_sub_callback,
-                                                      self._config_mqtt_server_url,
-                                                      self._config_mqtt_server_port,
-                                                      goal.topic,
-                                                      self._config_mqtt_qos)
-                if ret == 0:
-                    rospy.loginfo("MQTT Subscribe Thread Started")
-                    result.flag_success = True
-                else:
-                    rospy.logerr("Failed to start MQTT Subscribe Thread")
-                    result.flag_success = False
-
-        rospy.loginfo("Send goal result to client")
-        if result.flag_success:
-            rospy.loginfo("Succeeded")
-            goal_handle.set_succeeded(result)
-        else:
-            rospy.loginfo("Goal Failed. Aborting.")
-            goal_handle.set_aborted(result)
-
-        rospy.loginfo("Goal ID: " + str(goal_id.id) + " Goal Processing Done.")
-
-on_cancel(self, goal_handle):
+def on_cancel(goal_handle):
     """
-        This function will be called when Goal Cancel request is send to the Action Server
-        """
-        rospy.loginfo("Received cancel request.")
-        goal_id = goal_handle.get_goal_id()
-        rospy.logerr("Canceled " + str(goal_id))
+    Goal Canceling Function
+    This function will be called when Goal Cancel request is send to the Action Server
+    Parameters:
+        goal_handle(object): Goal handler for the incoming goal.
+    """
+    rospy.loginfo("Received cancel request.")
+    goal_id = goal_handle.get_goal_id()
+    rospy.logerr("Canceled " + str(goal_id))
 
 def func_inventory_data_callback(data):
     """
-    Callback Function : Triggers on Receiving Image Recognition Data
+    Callback Function
+    This method is triggered when there is a detected package on the shelf.
+    Parameters:
+        data(string): Relevant information regarding the detected package.
     """
-    kwargs = eval(data.inventoryData)
+    kwargs = eval(data)
 
     rospy.logwarn('\n\nINVENTORY UPDATE RECEIVED!\n\n')
     rospy.logwarn(kwargs)
 
-    iot.publish_to_spreadsheet(**kwargs)
+    resp = iot.publish_to_spreadsheet(**kwargs)
+    return resp
 
 def func_dispatch_data_callback(data):
     """
-    Callback Function : Triggers on Receiving Dispatch Data From ur5_1
+    Callback Function
+    This method is triggered when a package is dispatched.
+    Parameters:
+        data(string): Relevant information regarding the dispatched package.
     """
-    kwargs = eval(data.dispatchData)
+    kwargs = eval(data)
 
     rospy.logwarn('\n\nDISPATCH UPDATE RECEIVED!\n\n')
     rospy.logwarn(kwargs)
 
-    iot.publish_to_spreadsheet(**kwargs)
+    resp1 = iot.publish_to_spreadsheet(**kwargs)
 
     kwargs['id'] = 'Dashboard'
     kwargs['Order Dispatched'] = 'YES'
     kwargs['Dispatch Time'] = kwargs["Dispatch Date and Time"]
 
-    iot.publish_to_spreadsheet(**kwargs)
+    resp2 = iot.publish_to_spreadsheet(**kwargs)
+
+    return resp1 + resp2
 
 def func_shipped_data_callback(data):
     """
-    Callback Function : Triggers on Receiving Shipped Data From ur5_2
+    Callback Function
+    This method is triggered when a package is shipped.
+    Parameters:
+        data(string): Relevant information regarding the shipped package.
     """
-    kwargs = eval(data.shippedData)
+    kwargs = eval(data)
 
     rospy.logwarn('\n\nSHIPPING UPDATE RECEIVED!\n\n')
     rospy.logwarn(kwargs)
 
-    iot.publish_to_spreadsheet(**kwargs)
+    resp1 = iot.publish_to_spreadsheet(**kwargs)
 
     kwargs['id'] = 'Dashboard'
     kwargs['Order Shipped'] = 'YES'
     kwargs['Shipping Time'] = kwargs["Shipped Date and Time"]
 
-    iot.publish_to_spreadsheet(**kwargs)
+    resp2 = iot.publish_to_spreadsheet(**kwargs)
+
+    return resp1 + resp2
 
 def main():
     """
@@ -256,10 +265,6 @@ def main():
     rospy.init_node('node_ros_iot_bridge_action_server')
 
     IotRosBridge()
-
-    rospy.Subscriber('/topic_inventory_data', inventoryMsg, func_inventory_data_callback)
-    rospy.Subscriber('/topic_dispatch_data', dispatchMsg, func_dispatch_data_callback)
-    rospy.Subscriber('/topic_shipped_data', shippedMsg, func_shipped_data_callback)
 
     rospy.spin()
 

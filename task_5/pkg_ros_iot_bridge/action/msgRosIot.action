@@ -8,4 +8,4 @@ string message
 bool flag_success
 ---
 # feedback
-int8 percentage_complete
+int8 some_feedback

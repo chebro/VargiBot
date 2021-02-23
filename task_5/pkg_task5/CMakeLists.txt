@@ -53,9 +53,6 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
 	packageMsg.msg
-	inventoryMsg.msg
-  dispatchMsg.msg
-  shippedMsg.msg
   incomingMsg.msg
 )
 

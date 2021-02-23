@@ -4,10 +4,14 @@ config_iot:
   mqtt:
     server_url: "broker.mqttdashboard.com"
     server_port: 1883
-    topic_sub: "eyrc/CeAhsAGA/iot_to_ros"
-    topic_pub: "eyrc/CeAhsAGA/ros_to_iot"
+    sub_cb_ros_topic: "/topic_incoming_orders"
     incoming_orders: "/eyrc/vb/CeAhsAGA/orders"
     qos: 0
-
-    sub_cb_ros_topic: "/ros_iot_bridge/mqtt/sub"
-    spread_sheet_id: "1zm6nhfMDdUijzCuldgtv2cyIp10_iwgtioJrOPhRiEk"
+  google_apps:
+    spread_sheet_id: "AKfycbxzsgHgL5jaILoWdWIJuqrkUqmM-bkLQINWqemw6j3AW7ibDJJKoUIFmg"
+    submission_spreadsheet_id: "TODO"
+  http:
+    inventory: "topic_inventory_data"
+    dispatch: "topic_dispatch_data"
+    shipped: "topic_shipped_data"
+    

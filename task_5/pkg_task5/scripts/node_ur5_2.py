@@ -21,12 +21,14 @@ from pkg_vb_sim.srv import vacuumGripper
 from pkg_vb_sim.srv import conveyorBeltPowerMsg
 from pkg_vb_sim.msg import LogicalCameraImage
 from pkg_task5.msg import packageMsg
-from pkg_task5.msg import shippedMsg
+
+from pkg_ros_iot_bridge.msg import msgRosIotAction, msgRosIotGoal, msgRosIotResult
 
 class Ur5Moveit(object):
     """
     This class defines the robot and planning function of the ur5 arm.
     """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, arg_robot_name):
         """
         Constructor
@@ -34,10 +36,12 @@ class Ur5Moveit(object):
         """
         rospy.init_node('node_ur5_2', anonymous=True)
 
+        self._ac_ros_iot = actionlib.ActionClient('/action_ros_iot', msgRosIotAction)
+
         self._robot_ns = '/'  + arg_robot_name
         self._planning_group = "manipulator"
 
-        self._commander = moveit_commander.roscpp_initialize(sys.argv)
+        moveit_commander.roscpp_initialize(sys.argv)
         self._robot = moveit_commander.RobotCommander(
             robot_description=self._robot_ns + "/robot_description", ns=self._robot_ns
             )
@@ -82,7 +86,12 @@ class Ur5Moveit(object):
         self.city_w = []
         self.orderid_w = []
 
-        self.ship_pub = rospy.Publisher('topic_shipped_data', shippedMsg, queue_size=10)
+        param_config_iot = rospy.get_param('config_iot')
+        self._config_shipped_pub_topic = param_config_iot['http']['shipped']
+        self._goal_handles = {}
+        self._ac_ros_iot.wait_for_server()
+
+        rospy.loginfo("Action server is up, we can send new goals!")
 
         rospy.loginfo('\033[94m' + " >>> Ur5Moveit init done." + '\033[0m')
 
@@ -147,7 +156,6 @@ class Ur5Moveit(object):
     def go_to_predefined_pose(self, arg_pose_name):
         """
         Plan and Execute : Pre-defined Pose
-
         Parameter(string): Predefined pose name
         """
         rospy.loginfo('\033[94m' + "Going to Pose: {}".format(arg_pose_name) + '\033[0m')
@@ -163,7 +171,6 @@ class Ur5Moveit(object):
         """
         Loading the trajectories from the file and executing.
         This method executes the the plan stored in the config folder.
-
         Parameters:
             arg_file_path(string): Path of the file containing the trajectory.
             arg_file_name(string): Name of the file containing the trajectory.
@@ -185,12 +192,10 @@ class Ur5Moveit(object):
         Hard playing the saved trajectories from file.
         This method hard plays the trajectories till the path is played or
         maximum attemps have been made.
-
         Parameters:
             arg_file_path(string): Path of the file containing the trajectory.
             arg_file_name(string): Name of the file containing the trajectory.
             arg_max_attempts(int): Maximum number of attempts to play the file.
-
         Returns:
             bool: True-> Path executes || False-> Failed to execute the path
         """
@@ -214,7 +219,6 @@ class Ur5Moveit(object):
         """
         Callback function
         This method assigns the string which is published on the topic topic_package_details.
-
         Parameters:
             msg(string): Msg obtained from the topic topic_shipped_data containing various
                         attributes.
@@ -232,12 +236,10 @@ class Ur5Moveit(object):
         """
         Publish function
         This method returns the string which is published on the topic topic_shipped_data.
-
         Parameters:
             city(string): Destination city of the package.
             color(string): Color of the package.
             orderid(string): Order ID assigned to the package.
-
         """
         ship_obj = {}
         ship_obj['Team Id'] = 'VB#1004'
@@ -268,9 +270,65 @@ class Ur5Moveit(object):
             ship_obj['Cost'] = 100
             ship_obj['Estimated Time of Delivery'] = get_est_time_str(3)
 
-        str_ship_obj = str(ship_obj)
-        rospy.sleep(2)
-        self.ship_pub.publish(str_ship_obj)
+        ship_info = str(ship_obj)
+        ship_goal_handle = self.send_spreadsheet_pub_goal("http",
+                                                          "pub",
+                                                          self._config_shipped_pub_topic,
+                                                          ship_info)
+        ship_goal_key = str(len(self._goal_handles))
+        self._goal_handles[ship_goal_key] = ship_goal_handle
+        rospy.loginfo('Goal ' + ship_goal_key + ' Sent')
+
+    def send_spreadsheet_pub_goal(self, arg_protocol, arg_mode, arg_topic, arg_message):
+        """
+        Function to send Goals to Action Server: /action_ros_iot
+        """
+        goal = msgRosIotGoal()
+
+        goal.protocol = arg_protocol
+        goal.mode = arg_mode
+        goal.topic = arg_topic
+        goal.message = arg_message
+
+        rospy.loginfo("Sending HTTP Goal.")
+
+        goal_handle = self._ac_ros_iot.send_goal(goal, self.on_transition, None)
+        return goal_handle
+
+    def on_transition(self, goal_handle):
+        """
+        This function will be called when there is a change of state in the Action Client
+        State Machine : /action_ros_iot
+        """
+        result = msgRosIotResult()
+
+        index = 0
+        for i in self._goal_handles:
+            if self._goal_handles[i] == goal_handle:
+                index = i
+                break
+
+        rospy.loginfo("Transition Callback. Client Goal Handle #: " + str(index))
+        rospy.loginfo("Comm. State: " + str(goal_handle.get_comm_state()))
+        rospy.loginfo("Goal Status: " + str(goal_handle.get_goal_status()))
+
+        # if (Comm State == ACTIVE)
+        if goal_handle.get_comm_state() == 2:
+            rospy.loginfo(": Goal " + str(index) + " is active.")
+
+        # if (Comm State == DONE)
+        if goal_handle.get_comm_state() == 7:
+            rospy.loginfo(str(index) + ": Goal is DONE")
+            rospy.loginfo(goal_handle.get_terminal_state())
+
+            # get_result() gets the result produced by the Action Server
+            result = goal_handle.get_result()
+            rospy.loginfo(result.flag_success)
+
+            if result.flag_success:
+                rospy.loginfo("Goal Suceeded. Client Goal Handle #: " + str(index))
+            else:
+                rospy.loginfo("Goal failed. Client Goal Handle #: " + str(index))
 
     def __del__(self):
         """
@@ -284,10 +342,10 @@ def activate_vacuum_gripper(state):
     """
     Enable/Disable Gripper Module
     """
-    rospy.wait_for_service('/eyrc/vb/activate_vacuum_gripper/ur5_2')
+    rospy.wait_for_service('/eyrc/vb/ur5/activate_vacuum_gripper/ur5_2')
     try:
         activate_vacuum_gripper_service = rospy.ServiceProxy(
-            '/eyrc/vb/activate_vacuum_gripper/ur5_2', vacuumGripper
+            '/eyrc/vb/ur5/activate_vacuum_gripper/ur5_2', vacuumGripper
             )
         res = activate_vacuum_gripper_service(state)
         return res
@@ -297,10 +355,8 @@ def activate_vacuum_gripper(state):
 def set_conveyor_belt_speed(speed):
     """
     Control Conveyor Belt Speed
-
     This function allows us to control the speed of the conveyor belt
     using the service /eyrc/vb/conveyor/set_power.
-
     Parameter:
         speed(int): This value ranges from 0-100. Input value is
                     directly proportional to power set.
@@ -316,14 +372,11 @@ def set_conveyor_belt_speed(speed):
     except rospy.ServiceException as err:
         print "Service call failed: %s" + err
 
-
-
 def get_time_str():
     """
     Date string.
     This function is used to get the date after adding the offset date and
     extract current time in yyyymmdd format.
-
     Parameter:
     offset(int): Days which are to be added to the date.
     Returns:
@@ -339,7 +392,6 @@ def get_est_time_str(offset):
     Date string.
     This function is used to get the date after adding the offset date and
     extract current time in yyyymmdd format.
-
     Parameter:
     offset(int): Days which are to be added to the date.
     Returns:
