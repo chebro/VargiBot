@@ -7,7 +7,6 @@ config_iot:
     topic_sub: "eyrc/CeAhsAGA/iot_to_ros"
     topic_pub: "eyrc/CeAhsAGA/ros_to_iot"
     incoming_orders: "/eyrc/vb/CeAhsAGA/orders"
-    topic_incoming: "/topic_incoming_orders"
     qos: 0
 
     sub_cb_ros_topic: "/ros_iot_bridge/mqtt/sub"

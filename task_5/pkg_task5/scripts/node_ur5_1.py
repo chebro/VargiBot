@@ -29,7 +29,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from pkg_task5.msg import packageMsg
 from pkg_task5.msg import inventoryMsg
-from pkg_ros_iot_bridge.msg import incomingMsg
+from pkg_task5.msg import incomingMsg
 from pkg_task5.msg import dispatchMsg
 
 from cv_bridge import CvBridge, CvBridgeError

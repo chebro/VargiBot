@@ -56,6 +56,7 @@ find_package(catkin REQUIRED COMPONENTS
 	inventoryMsg.msg
   dispatchMsg.msg
   shippedMsg.msg
+  incomingMsg.msg
 )
 
 ## Generate services in the 'srv' folder
