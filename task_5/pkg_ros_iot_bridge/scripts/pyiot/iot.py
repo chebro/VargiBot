@@ -72,27 +72,25 @@ def publish_to_spreadsheet(**kwargs):
         **kwargs: Varaible number of keyworded arguments containing HTTP request params.
     """
     student_sheet_id = "AKfycbxzsgHgL5jaILoWdWIJuqrkUqmM-bkLQINWqemw6j3AW7ibDJJKoUIFmg"
-    #instructor_sheet_id = "TODO"
+    instructor_sheet_id = "AKfycbw5xylppoda-8HPjt2Tzq4ShU_Xef-Ik-hEtBPcPk0gdGw8095j4RZ7"
 
     surl = "https://script.google.com/macros/s/" + student_sheet_id + "/exec"
-    #iurl = "TODO"
+    iurl = "https://script.google.com/macros/s/" + instructor_sheet_id + "/exec"
 
-    sparams = {}
-    iparams = {}
+    params = {}
+
     for (key, val) in kwargs.items():
-        sparams[key] = val
-        iparams[key] = val
+        params[key] = val
 
-    print sparams
-    print iparams
+    print params
 
-    sresponse = requests.get(surl, params=sparams)
-    #iresponse = requests.get(iurl, params=iparams)
+    sresponse = requests.get(surl, params=params)
+    iresponse = requests.get(iurl, params=params)
 
     print sresponse
-    #print iresponse
+    print iresponse
 
-    if sresponse.status_code == 200: # and iresponse.status_code == 200
+    if sresponse.status_code == 200 and iresponse.status_code == 200:
         print 'HTTP Requests Sent.'
         return 0
 
