@@ -17,8 +17,11 @@ def mqtt_subscribe_thread_start(arg_callback_func,
                                 arg_mqtt_qos):
     """
     MQTT Sub Thread : Subscribes to MQTT
+
     This method subscribes to any MQTT topic.
+
     Parameters:
+
         arg_callback_func(function): Function to execute on receiving a message.
         arg_broker_url(string): MQTT broker URL.
         arg_broker_port(int): Port to connect to the MQTT broker.
@@ -44,7 +47,9 @@ def mqtt_publish(arg_broker_url,
                  arg_mqtt_qos):
     """
     MQTT Sub : Publishes to MQTT
+
     This method published to any MQTT topic.
+
     Parameters:
         arg_broker_url(string): MQTT broker URL.
         arg_broker_port(int): Port to connect to the MQTT broker.
@@ -68,6 +73,7 @@ def mqtt_publish(arg_broker_url,
 def publish_to_spreadsheet(**kwargs):
     """
     HTTP Pub : Publish to Spreadsheet (Variardic Function)
+    
     Parameters:
         **kwargs: Varaible number of keyworded arguments containing HTTP request params.
     """
@@ -82,6 +88,7 @@ def publish_to_spreadsheet(**kwargs):
     for (key, val) in kwargs.items():
         params[key] = val
 
+<<<<<<< HEAD
     print params
 
     sresponse = requests.get(surl, params=params)
@@ -92,6 +99,19 @@ def publish_to_spreadsheet(**kwargs):
 
     if sresponse.status_code == 200 and iresponse.status_code == 200:
         print 'HTTP Requests Sent.'
+=======
+    print(sparams)
+    print(iparams)
+
+    sresponse = requests.get(surl, params=sparams)
+    iresponse = requests.get(iurl, params=iparams)
+
+    print(sresponse)
+    print(iresponse)
+
+    if sresponse.status_code == 200: # and iresponse.status_code == 200
+        print('HTTP Requests Sent.')
+>>>>>>> e99a4b6b63525b60576b5f94050e42d2f86ab7ed
         return 0
 
     return -1
