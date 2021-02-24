@@ -2,6 +2,7 @@
 
 """
 ROS/IoT Bridge
+
 This program intends act as a bridge bwtween ROS and IoT.
 MQTT/HTTP requests are received/sent here.
 """
@@ -64,8 +65,10 @@ class IotRosBridge(object):
     def on_goal(self, goal_handle):
         """
         Callback Function
+
         This function will be called when Action Server receives a Goal.
-        Parameter:
+
+        Parameters: 
             goal_handle(object): Goal handler for the incoming goal.
         """
         goal = goal_handle.get_goal()
@@ -96,8 +99,10 @@ class IotRosBridge(object):
     def process_goal(self, goal_handle):
         """
         Goal Processing Function
+
         This function is called is a separate thread to process Goal
-        Parameter:
+
+        Parameters: 
             goal_handle(object): Goal handler for the incoming goal.
         """
         result = msgRosIotResult()
@@ -142,7 +147,9 @@ class IotRosBridge(object):
     def func_incoming_order_callback(self, client, userdata, message):
         """
         Callback Function
+
         This method is triggered when there is an incoming order.
+
         Parameters:
             client(string): Information regarding the MQTT client.
             userdata(string): Information regarding the userdata (if any).
@@ -191,7 +198,9 @@ class IotRosBridge(object):
 def on_cancel(goal_handle):
     """
     Goal Canceling Function
-    This function will be called when Goal Cancel request is send to the Action Server
+
+    This function will be called when Goal Cancel request is send to the Action Server.
+
     Parameters:
         goal_handle(object): Goal handler for the incoming goal.
     """
@@ -202,7 +211,9 @@ def on_cancel(goal_handle):
 def func_inventory_data_callback(data):
     """
     Callback Function
+
     This method is triggered when there is a detected package on the shelf.
+
     Parameters:
         data(string): Relevant information regarding the detected package.
     """
@@ -217,7 +228,9 @@ def func_inventory_data_callback(data):
 def func_dispatch_data_callback(data):
     """
     Callback Function
+
     This method is triggered when a package is dispatched.
+
     Parameters:
         data(string): Relevant information regarding the dispatched package.
     """
@@ -239,7 +252,9 @@ def func_dispatch_data_callback(data):
 def func_shipped_data_callback(data):
     """
     Callback Function
+
     This method is triggered when a package is shipped.
+
     Parameters:
         data(string): Relevant information regarding the shipped package.
     """

@@ -2,8 +2,8 @@
 
 """
 This program intends to control UR5_1 arm.
-UR5_1 arm function: To sort the packages according to their
-                    respective colours.
+UR5_1 arm function: To pick the objects from the shelf and place it on the coveyor belt.
+
 """
 
 import datetime
@@ -32,6 +32,7 @@ from pkg_ros_iot_bridge.msg import msgRosIotAction, msgRosIotGoal, msgRosIotResu
 class PriorityQueue(object):
     """
     Data structure defination.
+
     This class is defining the priority queue data structure.
     """
     def __init__(self):
@@ -46,6 +47,7 @@ class PriorityQueue(object):
     def is_empty(self):
         """
         Checking if the queue is empty.
+
         Returns:
             bool value telling if the queue is empty or not.
         """
@@ -60,7 +62,8 @@ class PriorityQueue(object):
     def delete(self):
         """
         This method is used for returning the max priority item in the queue.
-        Return:
+
+        Returns:
             Item with maximum priority.
         """
         try:
@@ -155,6 +158,7 @@ class Ur5Moveit(object):
     def play_planned_path_from_file(self, arg_file_path, arg_file_name):
         """
         Loading the trajectories from the file and executing.
+
         This method executes the the plan stored in the config folder.
         
         Parameters:
@@ -176,6 +180,7 @@ class Ur5Moveit(object):
     def hard_play_planned_path_from_file(self, arg_file_path, arg_file_name, arg_max_attempts):
         """
         Hard playing the saved trajectories from file.
+        
         This method hard plays the trajectories till the path is played or
         maximum attemps have been made.
         
@@ -203,8 +208,8 @@ class Ur5Moveit(object):
         
         This method is used for determining the presence of a package on the conveyor belt. 
 
-        Parameter: 
-            msg: This is a msg received from the logical camera containing the 
+        Parameters: 
+            LogicalCameraImage: This is a msg received from the logical camera containing the 
                  the objects and their position and orientation on the conveyor belt.
 
         """
@@ -221,7 +226,8 @@ class Ur5Moveit(object):
         This function receives the data from the subscription to the mqtt topic.
         The received data is inserted into the orders queue.
 
-        data(structure): This is the data received from the topic
+        Parameters:
+            data: This is the data received from the topic
         """
 
         incoming_dict = eval(data.incomingData)
@@ -236,7 +242,7 @@ class Ur5Moveit(object):
 
         This method is called for publishing the messages to the action server.
 
-        Parameter:
+        Parameters:
             arg_protocol(string): Protocol used for sending the data. eg: mqtt, http.
             arg_mode(string): Mode of communication. eg: pub:Publishing the data, sub: Subscribing
             arg_topic(string): Name of the channel of communication.
@@ -267,7 +273,7 @@ class Ur5Moveit(object):
 
         This method will be called when there is a change of state in the Action Client.
 
-        Parameter:
+        Parameters:
             goal_handle: This is a structure containing attributes related to the goal sent.
         
         """
@@ -324,7 +330,7 @@ class Camera2D(object):
         	   "/eyrc/vb/camera_1/image_raw", Image, self.func_callback_2D_camera)
         self.image = []
 
-    def get_qr_data(self, arg_image):
+    def get_pkg_color(self, arg_image):
         """
         Get the color of the given package.
 
@@ -377,7 +383,8 @@ class Camera2D(object):
 
         This function receives the data from the subscription to the 2D camera topic.
 
-        data(image structure): This is the data received from the topic.
+        Parameters:
+            data(image structure): This is the data received from the topic.
         """
 
         try:
@@ -397,7 +404,16 @@ class Camera2D(object):
 def activate_vacuum_gripper(state):
     """
     Enable/Disable Gripper Module
+        
+    This function enables and disables the vaccum gripper on the arm.
+       
+    Parameters:
+        state(bool): Required state of the vaccum gripper.
+        
+    Returns:
+        The service of activating the vaccum gripper is provided.
     """
+        
     rospy.wait_for_service('/eyrc/vb/ur5/activate_vacuum_gripper/ur5_1')
     try:
         activate_vacuum_gripper_service = rospy.ServiceProxy(
@@ -406,7 +422,7 @@ def activate_vacuum_gripper(state):
         res = activate_vacuum_gripper_service(state)
         return res
     except rospy.ServiceException as err:
-        print "Service call failed: %s" + err
+        print("Service call failed: %s" + err)
 
 def set_conveyor_belt_speed(speed):
     """
@@ -415,7 +431,7 @@ def set_conveyor_belt_speed(speed):
     This function allows us to control the speed of the conveyor belt
     using the service /eyrc/vb/conveyor/set_power.
 
-    Parameter:
+    Parameters:
         speed(int): This value ranges from 0-100. Input value is
                     directly proportional to power set.
 
@@ -429,7 +445,7 @@ def set_conveyor_belt_speed(speed):
         res = set_conveyor_belt_speed_value(speed)
         return res
     except rospy.ServiceException as err:
-        print "Service call failed: %s" + err
+        print("Service call failed: %s" + err)
 
 def get_sku_str():
     """
@@ -454,7 +470,7 @@ def get_time_str():
     This function is used to get the current time and time in yyyymmdd format.
     
     Returns:
-        string of the data and time.
+        A string of the data and time.
     """
     
     timestamp = int(time.time())
@@ -500,7 +516,7 @@ def main():
 
     for i in range(3):
         for j in reversed(range(3)):
-            color = two_dim_camera.get_qr_data(
+            color = two_dim_camera.get_pkg_color(
             	   two_dim_camera.image[i*150:i*150+149, j*167: (j+1)*167-1, :])
             inv_obj['Team Id'] = 'VB#1004'
             inv_obj['Unique Id'] = 'CeAhsAGA'
@@ -622,7 +638,7 @@ def main():
             if count > 8:
                 break
             pass
-            
+
     rospy.sleep(1)  #waiting for the arm to go to required position
 
     del ur5

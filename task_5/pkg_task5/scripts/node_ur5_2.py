@@ -2,9 +2,8 @@
 
 """
 This program intends to control UR5_2 arm.
+UR5_2 arm function: To sort the packages according to their respective colours.
 
-UR5_2 arm function: To sort the packages according to their
-                    respective colours.
 """
 
 import time
@@ -101,9 +100,11 @@ class Ur5Moveit(object):
         """
         Loading the trajectories from the file and executing.
         This method executes the the plan stored in the config folder.
+
         Parameters:
             arg_file_path(string): Path of the file containing the trajectory.
             arg_file_name(string): Name of the file containing the trajectory.
+
         Returns:
             bool: True-> Path executes || False-> Failed to execute the path
         """
@@ -122,10 +123,12 @@ class Ur5Moveit(object):
         Hard playing the saved trajectories from file.
         This method hard plays the trajectories till the path is played or
         maximum attemps have been made.
+
         Parameters:
             arg_file_path(string): Path of the file containing the trajectory.
             arg_file_name(string): Name of the file containing the trajectory.
             arg_max_attempts(int): Maximum number of attempts to play the file.
+
         Returns:
             bool: True-> Path executes || False-> Failed to execute the path
         """
@@ -145,7 +148,7 @@ class Ur5Moveit(object):
 
         This method is used for determining the presence of a package on the conveyor belt. 
 
-        Parameter: 
+        Parameters: 
             msg: This is a msg received from the logical camera containing the 
                  the objects and their position and orientation on the conveyor belt.
 
@@ -159,12 +162,11 @@ class Ur5Moveit(object):
         This method assigns the string which is published on the topic topic_package_details.
         
         Parameters:
-            msg(string): Msg obtained from the topic topic_shipped_data containing various
-                        attributes.
-                        packageName(string): Name of the package sent.
-                        color(string): Color of the package.
-                        city(string): Destination city of the package.
-                        orderid(string): Order ID assigned to the package.
+            msg(string): Msg obtained from the topic topic_shipped_data containing various attributes.
+                packageName(string): Name of the package sent,
+                color(string): Color of the package,
+                city(string): Destination city of the package,
+                orderid(string): Order ID assigned to the package.
         """
 
         self.color_w.append(msg.color)
@@ -175,6 +177,7 @@ class Ur5Moveit(object):
         """
         Publish function
         This method returns the string which is published on the topic topic_shipped_data.
+
         Parameters:
             city(string): Destination city of the package.
             color(string): Color of the package.
@@ -224,7 +227,7 @@ class Ur5Moveit(object):
 
         This method is called for publishing the messages to the action server.
 
-        Parameter:
+        Parameters:
             arg_protocol(string): Protocol used for sending the data. eg: mqtt, http.
             arg_mode(string): Mode of communication. eg: pub:Publishing the data, sub: Subscribing
             arg_topic(string): Name of the channel of communication.
@@ -254,7 +257,7 @@ class Ur5Moveit(object):
 
         This method will be called when there is a change of state in the Action Client.
 
-        Parameter:
+        Parameters:
             goal_handle: This is a structure containing attributes related to the goal sent.
         
         """
@@ -299,6 +302,14 @@ class Ur5Moveit(object):
 def activate_vacuum_gripper(state):
     """
     Enable/Disable Gripper Module
+        
+    This function enables and disables the vaccum gripper on the arm.
+       
+    Parameters:
+        state(bool): Required state of the vaccum gripper.
+        
+    Returns:
+        The service of activating the vaccum gripper is provided.
     """
     rospy.wait_for_service('/eyrc/vb/ur5/activate_vacuum_gripper/ur5_2')
     try:
@@ -308,18 +319,21 @@ def activate_vacuum_gripper(state):
         res = activate_vacuum_gripper_service(state)
         return res
     except rospy.ServiceException as err:
-        print "Service call failed: %s" + err
+        print("Service call failed: %s" + err)
 
 def set_conveyor_belt_speed(speed):
     """
     Control Conveyor Belt Speed
     This function allows us to control the speed of the conveyor belt
     using the service /eyrc/vb/conveyor/set_power.
-    Parameter:
+
+    Parameters:
         speed(int): This value ranges from 0-100. Input value is
                     directly proportional to power set.
+                    
     Returns:
         The service call's output is reflected in the world's conveyor belt.
+
     """
     rospy.wait_for_service('/eyrc/vb/conveyor/set_power')
     try:
@@ -328,7 +342,7 @@ def set_conveyor_belt_speed(speed):
         res = set_conveyor_belt_speed_value(speed)
         return res
     except rospy.ServiceException as err:
-        print "Service call failed: %s" + err
+        print("Service call failed: %s" + err)
 
 def get_time_str():
     """
@@ -351,11 +365,11 @@ def get_est_time_str(offset):
     This function is used to get the date after adding the offset date and
     extract current time in yyyymmdd format.
     
-    Parameter:
-    offset(int): Days which are to be added to the date.
+    Parameters:
+        offset(int): Days which are to be added to the date.
     
     Returns:
-    The date after offset number of days.
+        The date after offset number of days.
     """
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp) + datetime.timedelta(offset)

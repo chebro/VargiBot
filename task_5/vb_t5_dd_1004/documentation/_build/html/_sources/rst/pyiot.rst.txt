@@ -1,0 +1,21 @@
+pyiot package
+=============
+
+Submodules
+----------
+
+pyiot.iot module
+----------------
+
+.. automodule:: pyiot.iot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyiot
+   :members:
+   :undoc-members:
+   :show-inheritance:
