@@ -408,7 +408,7 @@ def main():
             ur5.pkg_detect_flag = False
             rospy.sleep(0.3)
             activate_vacuum_gripper(True)   # Activate gripper
-            set_conveyor_belt_speed(50)
+            set_conveyor_belt_speed(70)
             arg_file_name = "drop_to_int.yaml"
             ur5.hard_play_planned_path(arg_file_path, arg_file_name, 100)
             if color == "red":

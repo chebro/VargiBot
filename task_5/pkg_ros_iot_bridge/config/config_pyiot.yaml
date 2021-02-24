@@ -9,7 +9,7 @@ config_iot:
     qos: 0
   google_apps:
     spread_sheet_id: "AKfycbxzsgHgL5jaILoWdWIJuqrkUqmM-bkLQINWqemw6j3AW7ibDJJKoUIFmg"
-    submission_spreadsheet_id: "TODO"
+    submission_spreadsheet_id: "AKfycbw5xylppoda-8HPjt2Tzq4ShU_Xef-Ik-hEtBPcPk0gdGw8095j4RZ7"
   http:
     inventory: "topic_inventory_data"
     dispatch: "topic_dispatch_data"
