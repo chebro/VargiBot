@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>Introduction - E-yantra-#Vargibots-#Team-1004-Task_5-Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Introduction";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> E-yantra-#Vargibots-#Team-1004-Task_5-Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Introduction</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#introduction">Introduction</a></li>
+    
+
+    <li class="toctree-l2"><a href="#video-of-implementation">Video of implementation</a></li>
+    
+
+    <li class="toctree-l2"><a href="#implementation">Implementation</a></li>
+
+    <li class="toctree-l2"><a href="#api-documentation">API Documentation</a></li>
+    <li class="toctree-l2"><a href="#rqt-graph">RQT Graph</a></li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">E-yantra-#Vargibots-#Team-1004-Task_5-Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Introduction</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="introduction">Introduction</h1>
+<p>Industry 4.0 is the current trend of automation and data exchange in manufacturing technologies. It aims at automation in loading and unloading, pick, place and stock management. It includes cyber-physical systems, the Internet of things and cloud computing. </p>
+<p>The current warehouse management system is inefficient in eliminating certain issues. It requires time and effort to make physical checks of various products and their deliveries manually. This often leads to delays and mis-packs. The duplication of information and data entry is also a tedious task taking up long hours. This system requires a lot of manual labour which also shoots up the labour costs. </p>
+<p>With the help of technologies like IOT, intelligent sensors, cloud computing we are able to achieve automation and develop smart ways in handling the data. This project ‘Vargibot’ is centered around the idea to develop an automated warehouse management system. The project uses Gazebo as a 3D simulation platform to simulate robots in complex environments. </p>
+<p>The virtual environment consists of various colour-coded boxes to be delivered to different parts of the city. The order of delivery is subjected to a predefined priority order. The red coloured packages have the highest priority symbolizing medicines, the yellow coloured packages have medium priority symbolizing food and green coloured packages have the lowest priority symbolizing clothes. Two industrial robotic arms are placed at the ends of the conveyor belt.The first arm picks up the packages depending upon the priority of the orders received and places  them on the conveyor belt. The second arm will collect the packages, sort them based on their colours and place them into their respective bins .The users will be notified regarding the status of their delivery once the order is placed and shipped.</p>
+<h1 id="video-of-implementation">Video of implementation</h1>
+<p>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/beXIOFu3LQY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</p>
+<h1 id="implementation">Implementation</h1>
+<ol>
+<li>The 2D camera faces the packages on the shelf. The camera uses colour detection techniques or QR decoding techniques for classifying the packages on the shelf according to their colours.</li>
+<li>Inventory Management Spreadsheet of the warehouse is updated using the ROS-IOT bridge.It contains details of all the packages present on the shelf like their cost, quantity, priority etc.</li>
+<li>MQTT is the messaging protocol used to establish two way communication. It consists of publishers, topics, brokers and subscribers.<em>Action client collects the orders and publishes them on MQTT</em>. The orders will be published on MQTT topics and are received using ROS_IOT bridge.<em>Simultaneously the incoming orders sheet is updated</em>.</li>
+<li>The UR5 #1 Arm starts picking up the packages from the shelf and places it on the conveyor belt one-by-one. If there are multiple orders, the arm picks the orders based on their priorities. Once the package is placed on the conveyor belt, the orders dispatched sheet will be updated in the IMS. An email notification will be sent to the client using Google app scripts. The UR5#1 publishes a message to UR5#2 after the order is placed on the conveyor belt.</li>
+<li>UR5#2 sorts the package based on its colour, <em>verifies it with the message published by UR5#1</em> and place them in their respective priority bins. </li>
+<li>The orders shipped sheet and the dashboard sheet of the warehouse inventory mastersheet will be updated. It contains details of the geolocation showing information about Inventory order, place and status of delivery and the time taken. </li>
+<li>An email notification will be sent to the customer after U5#2 picks up the packages from the conveyor belt and places them into colour corresponding bins.</li>
+</ol>
+<h1 id="api-documentation">API Documentation</h1>
+<div>
+    <a href="./api_docs/_build/html/index.html"> API Documentation</a>
+</div>
+<br>
+<h1 id="rqt-graph">RQT Graph</h1>
+<img src="rqt_graph.png">
+<p><em>This is the rqt graph.</em></p>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2021-02-24 17:03:16
+-->
