@@ -142,18 +142,18 @@ class Ur5Moveit(object):
 
         return flag_success
 
-    def func_callback_logical_camera(self, msg):
+    def func_callback_logical_camera_2(self, LogicalCameraImage):
         """
         Callback Function for Logical Camera Subscription
 
         This method is used for determining the presence of a package on the conveyor belt. 
 
         Parameters: 
-            msg: This is a msg received from the logical camera containing the 
+            LogicalCameraImage: This is a LogicalCameraImage received from the logical camera containing the 
                  the objects and their position and orientation on the conveyor belt.
 
         """
-        self.pkg_detect_flag = msg.models and msg.models[-1].type != 'ur5'
+        self.pkg_detect_flag = LogicalCameraImage.models and LogicalCameraImage.models[-1].type != 'ur5'
 
     def func_callback_package_details(self, msg):
         """
@@ -388,7 +388,7 @@ def main():
     ur5 = Ur5Moveit('ur5_2')
 
     rospy.Subscriber('/eyrc/vb/logical_camera_2', LogicalCameraImage,
-                     ur5.func_callback_logical_camera)
+                     ur5.func_callback_logical_camera_2)
     rospy.Subscriber('/topic_package_details', packageMsg,
                      ur5.func_callback_package_details)
 
