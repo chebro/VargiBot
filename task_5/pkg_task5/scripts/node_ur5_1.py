@@ -30,20 +30,39 @@ from pkg_task5.msg import packageMsg, incomingMsg
 from pkg_ros_iot_bridge.msg import msgRosIotAction, msgRosIotGoal, msgRosIotResult
 
 class PriorityQueue(object):
+    """
+    Data structure defination.
+    This class is defining the priority queue data structure.
+    """
     def __init__(self):
+        """
+        Intiating an empty queue.
+        """
         self.queue = []
 
     def __str__(self):
         return ' '.join([str(i) for i in self.queue])
-    # for checking if the queue is empty
+    
     def is_empty(self):
+        """
+        Checking if the queue is empty.
+        Returns:
+            bool value telling if the queue is empty or not.
+        """
+        
         return len(self.queue) == 0
 
-    # for inserting an element in the queue
     def insert(self, data):
+        """
+        Appending data into the queue.
+        """
         self.queue.append(data)
-    # for popping an element based on Priority
     def delete(self):
+        """
+        This method is used for returning the max priority item in the queue.
+        Return:
+            Item with maximum priority.
+        """
         try:
             max_index = 0
             for i in range(len(self.queue)):
@@ -61,11 +80,19 @@ class PriorityQueue(object):
 
 class Ur5Moveit(object):
     """
-    Constructor
+    This class defines the robot and planning function of the ur5 arm.
     """
     # pylint: disable=too-many-instance-attributes
     def __init__(self, arg_robot_name):
+        """
+        Constructor
 
+        This intiates the robot and required arguments in this class.
+
+        Parameters: 
+            arg_robot_name(string): It is the name of the robot.
+        """
+        
         rospy.init_node('node_ur5_1', anonymous=True)
 
         self._ac_ros_iot = actionlib.ActionClient('/action_ros_iot', msgRosIotAction)
@@ -91,18 +118,13 @@ class Ur5Moveit(object):
         self._eef_link = self._group.get_end_effector_link()
         self._group_names = self._robot.get_group_names()
 
-        #All the box coordinates:
-
-        self._box_x = [0.28, 0, -0.28]
-        self._box_y = 6.59-7.00
-        self._box_z = [1.92, 1.65, 1.43, 1.20]
-
-        #incoming orders queue
+        # Incoming orders queue
 
         self._orders = PriorityQueue()
 
         # Attribute to store computed trajectory by the planner
         self._computed_plan = ''
+        # Checks for the object on conveyor belt
         self.presence_of_package = False
         # Current State of the Robot is needed to add box to planning scene
         self._curr_state = self._robot.get_current_state()
@@ -132,7 +154,15 @@ class Ur5Moveit(object):
 
     def play_planned_path_from_file(self, arg_file_path, arg_file_name):
         """
-        Loading the trajectories from the file and executing
+        Loading the trajectories from the file and executing.
+        This method executes the the plan stored in the config folder.
+        
+        Parameters:
+            arg_file_path(string): Path of the file containing the trajectory.
+            arg_file_name(string): Name of the file containing the trajectory.
+        
+        Returns:
+            bool: True-> Path executes || False-> Failed to execute the path
         """
         file_path = arg_file_path + arg_file_name
 
@@ -144,6 +174,20 @@ class Ur5Moveit(object):
         return ret
 
     def hard_play_planned_path_from_file(self, arg_file_path, arg_file_name, arg_max_attempts):
+        """
+        Hard playing the saved trajectories from file.
+        This method hard plays the trajectories till the path is played or
+        maximum attemps have been made.
+        
+        Parameters:
+            arg_file_path(string): Path of the file containing the trajectory.
+            arg_file_name(string): Name of the file containing the trajectory.
+            arg_max_attempts(int): Maximum number of attempts to play the file.
+        
+        Returns:
+            bool: True-> Path executes || False-> Failed to execute the path
+        """
+        
         number_attempts = 0
         flag_success = False
 
@@ -153,20 +197,17 @@ class Ur5Moveit(object):
             rospy.logwarn("attempts: {}".format(number_attempts))
         return True
 
-    def go_to_predefined_pose(self, arg_pose_name):
-        """
-        Plan and Execute : Pre-defined Pose
-        """
-        rospy.loginfo('\033[94m' + "Going to Pose: {}".format(arg_pose_name) + '\033[0m')
-        self._group.set_named_target(arg_pose_name)
-        plan = self._group.plan()
-        goal = moveit_msgs.msg.ExecuteTrajectoryGoal()
-        goal.trajectory = plan
-        self._exectute_trajectory_client.send_goal(goal)
-        self._exectute_trajectory_client.wait_for_result()
-        rospy.loginfo('\033[94m' + "Now at Pose: {}".format(arg_pose_name) + '\033[0m')
-
     def func_callback_topic_logical_camera_1(self, LogicalCameraImage):
+        """
+        Callback Function for Logical Camera Subscription
+        
+        This method is used for determining the presence of a package on the conveyor belt. 
+
+        Parameter: 
+            msg: This is a msg received from the logical camera containing the 
+                 the objects and their position and orientation on the conveyor belt.
+
+        """
 
         if len(LogicalCameraImage.models) == 0:
             self.presence_of_package = False
@@ -174,6 +215,14 @@ class Ur5Moveit(object):
             self.presence_of_package = True
 
     def func_callback_topic_incoming_orders(self, data):
+        """
+        Callback method for the incoming orders.
+
+        This function receives the data from the subscription to the mqtt topic.
+        The received data is inserted into the orders queue.
+
+        data(structure): This is the data received from the topic
+        """
 
         incoming_dict = eval(data.incomingData)
         rospy.logwarn('\n\nATTENTION! NEW ORDER!\n\n')
@@ -183,7 +232,22 @@ class Ur5Moveit(object):
 
     def send_spreadsheet_pub_goal(self, arg_protocol, arg_mode, arg_topic, arg_message):
         """
-        Function to send Goals to Action Server: /action_ros_iot
+        Method to send Goals to Action Server: /action_ros_iot
+
+        This method is called for publishing the messages to the action server.
+
+        Parameter:
+            arg_protocol(string): Protocol used for sending the data. eg: mqtt, http.
+            arg_mode(string): Mode of communication. eg: pub:Publishing the data, sub: Subscribing
+            arg_topic(string): Name of the channel of communication.
+            arg_message(string): Message to be sent through the topic.
+    
+        Return: 
+            goal handle: A goal handle is returned.
+        
+        NOTE:
+            The data type of arg_message is dependent on the defination of the message. In this case we are 
+            using a string. 
         """
         goal = msgRosIotGoal()
 
@@ -199,8 +263,13 @@ class Ur5Moveit(object):
 
     def on_transition(self, goal_handle):
         """
-        This function will be called when there is a change of state in the Action Client
         State Machine : /action_ros_iot
+
+        This method will be called when there is a change of state in the Action Client.
+
+        Parameter:
+            goal_handle: This is a structure containing attributes related to the goal sent.
+        
         """
         result = msgRosIotResult()
 
@@ -241,14 +310,35 @@ class Ur5Moveit(object):
             '\033[94m' + "Object of class Ur5Moveit Deleted." + '\033[0m')
 
 class Camera2D(object):
-    """docstring for Camera2D"""
+    """
+    This class is used for getting the camera data and extracting required information.
+    """
     def __init__(self):
+        """
+        Constructor
+
+        This intiates the subscription to the input of the camera and other required structures.
+        """
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber(
         	   "/eyrc/vb/camera_1/image_raw", Image, self.func_callback_2D_camera)
         self.image = []
 
     def get_qr_data(self, arg_image):
+        """
+        Get the color of the given package.
+
+        This function uses 2 methods to determine the package color.
+            1. Reading the qr data
+            2. Detecting the most prominant color in the image.
+
+        Parameters:
+            arg_image(int[][][]): This is the 3D array containg the image pixle values.
+
+        Returns:
+            string: color of the package
+        """
+        
         qr_result = decode(arg_image)
 
         if qr_result:
@@ -282,6 +372,14 @@ class Camera2D(object):
         return color
 
     def func_callback_2D_camera(self, data):
+        """
+        Callback method for the 2D camera images.
+
+        This function receives the data from the subscription to the 2D camera topic.
+
+        data(image structure): This is the data received from the topic.
+        """
+
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as error:
@@ -313,11 +411,14 @@ def activate_vacuum_gripper(state):
 def set_conveyor_belt_speed(speed):
     """
     Control Conveyor Belt Speed
+
     This function allows us to control the speed of the conveyor belt
     using the service /eyrc/vb/conveyor/set_power.
+
     Parameter:
         speed(int): This value ranges from 0-100. Input value is
                     directly proportional to power set.
+
     Returns:
         The service call's output is reflected in the world's conveyor belt.
     """
@@ -331,6 +432,15 @@ def set_conveyor_belt_speed(speed):
         print "Service call failed: %s" + err
 
 def get_sku_str():
+    """
+    Month and Year string.
+    
+    This function returns the current month and year.
+
+    Returns:
+        A string of month and year.
+    """
+    
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp)
     str_time = value.strftime('%m%y')
@@ -338,6 +448,15 @@ def get_sku_str():
     return str_time
 
 def get_time_str():
+    """
+    Date string.
+
+    This function is used to get the current time and time in yyyymmdd format.
+    
+    Returns:
+        string of the data and time.
+    """
+    
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp)
     str_time = value.strftime('%Y-%m-%d %H:%M:%S')
@@ -368,6 +487,9 @@ def main():
 
     """
     Inventory data publisher.
+
+    In this section data is being published to the action server from action client.
+
     """
 
     red = []
@@ -500,7 +622,7 @@ def main():
             if count > 8:
                 break
             pass
-    #ur5.go_to_predefined_pose("allZeros")
+            
     rospy.sleep(1)  #waiting for the arm to go to required position
 
     del ur5

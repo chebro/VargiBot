@@ -2,6 +2,7 @@
 
 """
 This program intends to control UR5_2 arm.
+
 UR5_2 arm function: To sort the packages according to their
                     respective colours.
 """
@@ -32,6 +33,7 @@ class Ur5Moveit(object):
     def __init__(self, arg_robot_name):
         """
         Constructor
+
         This intiates the robot and required arguments in this class.
         """
         rospy.init_node('node_ur5_2', anonymous=True)
@@ -95,78 +97,6 @@ class Ur5Moveit(object):
 
         rospy.loginfo('\033[94m' + " >>> Ur5Moveit init done." + '\033[0m')
 
-    def go_to_pose(self, arg_pose):
-        """
-        Plan and Execute : Go to Pose
-        """
-        pose_values = self._group.get_current_pose().pose
-        rospy.loginfo('\033[94m' + ">>> Current Pose:" + '\033[0m')
-        rospy.loginfo(pose_values)
-
-        self._group.set_pose_target(arg_pose)
-
-        flag_plan = self._group.go(wait=True)
-
-        pose_values = self._group.get_current_pose().pose
-        rospy.loginfo('\033[94m' + ">>> Final Pose:" + '\033[0m')
-        rospy.loginfo(pose_values)
-
-        list_joint_values = self._group.get_current_joint_values()
-        rospy.loginfo('\033[94m' + ">>> Final Joint Values:" + '\033[0m')
-        rospy.loginfo(list_joint_values)
-
-        if flag_plan:
-            rospy.loginfo(
-                '\033[94m' + ">>> go_to_pose() Success" + '\033[0m')
-        else:
-            rospy.logerr(
-                '\033[94m' + ">>> go_to_pose() Failed. Solution for Pose not Found." + '\033[0m')
-
-        return flag_plan
-
-    def set_joint_angles(self, arg_list_joint_angles):
-        """
-        Plan and Execute : Set Joint Angles
-        """
-        list_joint_values = self._group.get_current_joint_values()
-        rospy.loginfo('\033[94m' + ">>> Current Joint Values:" + '\033[0m')
-        rospy.loginfo(list_joint_values)
-
-        self._group.set_joint_value_target(arg_list_joint_angles)
-        self._group.plan()
-        flag_plan = self._group.go(wait=True)
-
-        list_joint_values = self._group.get_current_joint_values()
-        rospy.loginfo('\033[94m' + ">>> Final Joint Values:" + '\033[0m')
-        rospy.loginfo(list_joint_values)
-
-        pose_values = self._group.get_current_pose().pose
-        rospy.loginfo('\033[94m' + ">>> Final Pose:" + '\033[0m')
-        rospy.loginfo(pose_values)
-
-        if flag_plan:
-            rospy.loginfo(
-                '\033[94m' + ">>> set_joint_angles() Success" + '\033[0m')
-        else:
-            rospy.logerr(
-                '\033[94m' + ">>> set_joint_angles() Failed." + '\033[0m')
-
-        return flag_plan
-
-    def go_to_predefined_pose(self, arg_pose_name):
-        """
-        Plan and Execute : Pre-defined Pose
-        Parameter(string): Predefined pose name
-        """
-        rospy.loginfo('\033[94m' + "Going to Pose: {}".format(arg_pose_name) + '\033[0m')
-        self._group.set_named_target(arg_pose_name)
-        plan = self._group.plan()
-        goal = moveit_msgs.msg.ExecuteTrajectoryGoal()
-        goal.trajectory = plan
-        self._exectute_trajectory_client.send_goal(goal)
-        self._exectute_trajectory_client.wait_for_result()
-        rospy.loginfo('\033[94m' + "Now at Pose: {}".format(arg_pose_name) + '\033[0m')
-
     def play_planned_path_from_file(self, arg_file_path, arg_file_name):
         """
         Loading the trajectories from the file and executing.
@@ -212,13 +142,22 @@ class Ur5Moveit(object):
     def func_callback_logical_camera(self, msg):
         """
         Callback Function for Logical Camera Subscription
+
+        This method is used for determining the presence of a package on the conveyor belt. 
+
+        Parameter: 
+            msg: This is a msg received from the logical camera containing the 
+                 the objects and their position and orientation on the conveyor belt.
+
         """
         self.pkg_detect_flag = msg.models and msg.models[-1].type != 'ur5'
 
     def func_callback_package_details(self, msg):
         """
         Callback function
+        
         This method assigns the string which is published on the topic topic_package_details.
+        
         Parameters:
             msg(string): Msg obtained from the topic topic_shipped_data containing various
                         attributes.
@@ -281,7 +220,21 @@ class Ur5Moveit(object):
 
     def send_spreadsheet_pub_goal(self, arg_protocol, arg_mode, arg_topic, arg_message):
         """
-        Function to send Goals to Action Server: /action_ros_iot
+        Method to send Goals to Action Server: /action_ros_iot
+
+        This method is called for publishing the messages to the action server.
+
+        Parameter:
+            arg_protocol(string): Protocol used for sending the data. eg: mqtt, http.
+            arg_mode(string): Mode of communication. eg: pub:Publishing the data, sub: Subscribing
+            arg_topic(string): Name of the channel of communication.
+            arg_message(string): Message to be sent through the topic.
+    
+        Return: 
+            goal handle: A goal handle is returned.
+        NOTE:
+            The data type of arg_message is dependent on the defination of the message. In this case we are 
+            using a string. 
         """
         goal = msgRosIotGoal()
 
@@ -297,8 +250,13 @@ class Ur5Moveit(object):
 
     def on_transition(self, goal_handle):
         """
-        This function will be called when there is a change of state in the Action Client
         State Machine : /action_ros_iot
+
+        This method will be called when there is a change of state in the Action Client.
+
+        Parameter:
+            goal_handle: This is a structure containing attributes related to the goal sent.
+        
         """
         result = msgRosIotResult()
 
@@ -375,12 +333,11 @@ def set_conveyor_belt_speed(speed):
 def get_time_str():
     """
     Date string.
-    This function is used to get the date after adding the offset date and
-    extract current time in yyyymmdd format.
-    Parameter:
-    offset(int): Days which are to be added to the date.
+    
+    This function is used to get the current time and time in yyyymmdd format.
+    
     Returns:
-    The date after offset number of days.
+        string of the data and time.
     """
     timestamp = int(time.time())
     value = datetime.datetime.fromtimestamp(timestamp)
@@ -390,10 +347,13 @@ def get_time_str():
 def get_est_time_str(offset):
     """
     Date string.
+    
     This function is used to get the date after adding the offset date and
     extract current time in yyyymmdd format.
+    
     Parameter:
     offset(int): Days which are to be added to the date.
+    
     Returns:
     The date after offset number of days.
     """
