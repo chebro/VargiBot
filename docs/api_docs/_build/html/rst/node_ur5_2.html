@@ -1,0 +1,407 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>node_ur5_2 module &mdash; eYRC VargiBot 1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> eYRC VargiBot
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">node_ur5_2 module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">eYRC VargiBot</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>node_ur5_2 module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/rst/node_ur5_2.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-node_ur5_2">
+<span id="node-ur5-2-module"></span><h1>node_ur5_2 module<a class="headerlink" href="#module-node_ur5_2" title="Permalink to this headline">¶</a></h1>
+<p>This program intends to control UR5_2 arm.
+UR5_2 arm function: To sort the packages according to their respective colours.</p>
+<dl class="py class">
+<dt id="node_ur5_2.Ur5Moveit">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">node_ur5_2.</span></code><code class="sig-name descname"><span class="pre">Ur5Moveit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg_robot_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class defines the robot and planning function of the ur5 arm.</p>
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.func_callback_logical_camera">
+<code class="sig-name descname"><span class="pre">func_callback_logical_camera</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.func_callback_logical_camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Function for Logical Camera Subscription</p>
+<p>This method is used for determining the presence of a package on the conveyor belt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>msg</strong> – This is a msg received from the logical camera containing the
+the objects and their position and orientation on the conveyor belt.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.func_callback_package_details">
+<code class="sig-name descname"><span class="pre">func_callback_package_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.func_callback_package_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback function</p>
+<p>This method assigns the string which is published on the topic topic_package_details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>string</em>) – Msg obtained from the topic topic_shipped_data containing various attributes.
+packageName(string): Name of the package sent,
+color(string): Color of the package,
+city(string): Destination city of the package,
+orderid(string): Order ID assigned to the package.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.func_publish_orders_shipped">
+<code class="sig-name descname"><span class="pre">func_publish_orders_shipped</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">city</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orderid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.func_publish_orders_shipped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publish function
+This method returns the string which is published on the topic topic_shipped_data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>city</strong> (<em>string</em>) – Destination city of the package.</p></li>
+<li><p><strong>color</strong> (<em>string</em>) – Color of the package.</p></li>
+<li><p><strong>orderid</strong> (<em>string</em>) – Order ID assigned to the package.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.hard_play_planned_path">
+<code class="sig-name descname"><span class="pre">hard_play_planned_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg_max_attempts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.hard_play_planned_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hard playing the saved trajectories from file.
+This method hard plays the trajectories till the path is played or
+maximum attemps have been made.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg_file_path</strong> (<em>string</em>) – Path of the file containing the trajectory.</p></li>
+<li><p><strong>arg_file_name</strong> (<em>string</em>) – Name of the file containing the trajectory.</p></li>
+<li><p><strong>arg_max_attempts</strong> (<em>int</em>) – Maximum number of attempts to play the file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True-&gt; Path executes || False-&gt; Failed to execute the path</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.on_transition">
+<code class="sig-name descname"><span class="pre">on_transition</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_handle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.on_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>State Machine : /action_ros_iot</p>
+<p>This method will be called when there is a change of state in the Action Client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>goal_handle</strong> – This is a structure containing attributes related to the goal sent.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.play_planned_path_from_file">
+<code class="sig-name descname"><span class="pre">play_planned_path_from_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.play_planned_path_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loading the trajectories from the file and executing.
+This method executes the the plan stored in the config folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg_file_path</strong> (<em>string</em>) – Path of the file containing the trajectory.</p></li>
+<li><p><strong>arg_file_name</strong> (<em>string</em>) – Name of the file containing the trajectory.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True-&gt; Path executes || False-&gt; Failed to execute the path</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_ur5_2.Ur5Moveit.send_spreadsheet_pub_goal">
+<code class="sig-name descname"><span class="pre">send_spreadsheet_pub_goal</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg_protocol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg_topic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.Ur5Moveit.send_spreadsheet_pub_goal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to send Goals to Action Server: /action_ros_iot</p>
+<p>This method is called for publishing the messages to the action server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg_protocol</strong> (<em>string</em>) – Protocol used for sending the data. eg: mqtt, http.</p></li>
+<li><p><strong>arg_mode</strong> (<em>string</em>) – Mode of communication. eg: pub:Publishing the data, sub: Subscribing</p></li>
+<li><p><strong>arg_topic</strong> (<em>string</em>) – Name of the channel of communication.</p></li>
+<li><p><strong>arg_message</strong> (<em>string</em>) – Message to be sent through the topic.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A goal handle is returned.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>goal handle</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The data type of arg_message is dependent on the defination of the message. In this case we are
+using a string.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_ur5_2.activate_vacuum_gripper">
+<code class="sig-prename descclassname"><span class="pre">node_ur5_2.</span></code><code class="sig-name descname"><span class="pre">activate_vacuum_gripper</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.activate_vacuum_gripper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable/Disable Gripper Module</p>
+<p>This function enables and disables the vaccum gripper on the arm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>state</strong> (<em>bool</em>) – Required state of the vaccum gripper.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The service of activating the vaccum gripper is provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_ur5_2.get_est_time_str">
+<code class="sig-prename descclassname"><span class="pre">node_ur5_2.</span></code><code class="sig-name descname"><span class="pre">get_est_time_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.get_est_time_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Date string.</p>
+<p>This function is used to get the date after adding the offset date and
+extract current time in yyyymmdd format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>offset</strong> (<em>int</em>) – Days which are to be added to the date.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The date after offset number of days.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_ur5_2.get_time_str">
+<code class="sig-prename descclassname"><span class="pre">node_ur5_2.</span></code><code class="sig-name descname"><span class="pre">get_time_str</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.get_time_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Date string.</p>
+<p>This function is used to get the current time and time in yyyymmdd format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string of the data and time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_ur5_2.main">
+<code class="sig-prename descclassname"><span class="pre">node_ur5_2.</span></code><code class="sig-name descname"><span class="pre">main</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main Function</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_ur5_2.set_conveyor_belt_speed">
+<code class="sig-prename descclassname"><span class="pre">node_ur5_2.</span></code><code class="sig-name descname"><span class="pre">set_conveyor_belt_speed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">speed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_ur5_2.set_conveyor_belt_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Control Conveyor Belt Speed
+This function allows us to control the speed of the conveyor belt
+using the service /eyrc/vb/conveyor/set_power.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>speed</strong> (<em>int</em>) – This value ranges from 0-100. Input value is
+directly proportional to power set.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The service call’s output is reflected in the world’s conveyor belt.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Sravanth, Sravya, Snehita, Aakanksha.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

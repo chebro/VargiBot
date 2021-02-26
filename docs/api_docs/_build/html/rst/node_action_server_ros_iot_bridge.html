@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>node_action_server_ros_iot_bridge module &mdash; eYRC VargiBot 1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> eYRC VargiBot
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">node_action_server_ros_iot_bridge module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">eYRC VargiBot</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>node_action_server_ros_iot_bridge module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/rst/node_action_server_ros_iot_bridge.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-node_action_server_ros_iot_bridge">
+<span id="node-action-server-ros-iot-bridge-module"></span><h1>node_action_server_ros_iot_bridge module<a class="headerlink" href="#module-node_action_server_ros_iot_bridge" title="Permalink to this headline">¶</a></h1>
+<p>ROS/IoT Bridge</p>
+<p>This program intends act as a bridge bwtween ROS and IoT.
+MQTT/HTTP requests are received/sent here.</p>
+<dl class="py class">
+<dt id="node_action_server_ros_iot_bridge.IotRosBridge">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">node_action_server_ros_iot_bridge.</span></code><code class="sig-name descname"><span class="pre">IotRosBridge</span></code><a class="headerlink" href="#node_action_server_ros_iot_bridge.IotRosBridge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>ROS/Iot Bridge Class : Performs MQTT Sub + Spreadsheet Pub</p>
+<dl class="py method">
+<dt id="node_action_server_ros_iot_bridge.IotRosBridge.func_incoming_order_callback">
+<code class="sig-name descname"><span class="pre">func_incoming_order_callback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">userdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.IotRosBridge.func_incoming_order_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Function</p>
+<p>This method is triggered when there is an incoming order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<em>string</em>) – Information regarding the MQTT client.</p></li>
+<li><p><strong>userdata</strong> (<em>string</em>) – Information regarding the userdata (if any).</p></li>
+<li><p><strong>message</strong> (<em>string</em>) – Contains the MQTT message.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_action_server_ros_iot_bridge.IotRosBridge.on_goal">
+<code class="sig-name descname"><span class="pre">on_goal</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_handle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.IotRosBridge.on_goal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Function</p>
+<p>This function will be called when Action Server receives a Goal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>goal_handle</strong> (<em>object</em>) – Goal handler for the incoming goal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="node_action_server_ros_iot_bridge.IotRosBridge.process_goal">
+<code class="sig-name descname"><span class="pre">process_goal</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_handle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.IotRosBridge.process_goal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Goal Processing Function</p>
+<p>This function is called is a separate thread to process Goal</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>goal_handle</strong> (<em>object</em>) – Goal handler for the incoming goal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_action_server_ros_iot_bridge.func_dispatch_data_callback">
+<code class="sig-prename descclassname"><span class="pre">node_action_server_ros_iot_bridge.</span></code><code class="sig-name descname"><span class="pre">func_dispatch_data_callback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.func_dispatch_data_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Function</p>
+<p>This method is triggered when a package is dispatched.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>string</em>) – Relevant information regarding the dispatched package.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_action_server_ros_iot_bridge.func_inventory_data_callback">
+<code class="sig-prename descclassname"><span class="pre">node_action_server_ros_iot_bridge.</span></code><code class="sig-name descname"><span class="pre">func_inventory_data_callback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.func_inventory_data_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Function</p>
+<p>This method is triggered when there is a detected package on the shelf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>string</em>) – Relevant information regarding the detected package.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_action_server_ros_iot_bridge.func_shipped_data_callback">
+<code class="sig-prename descclassname"><span class="pre">node_action_server_ros_iot_bridge.</span></code><code class="sig-name descname"><span class="pre">func_shipped_data_callback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.func_shipped_data_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback Function</p>
+<p>This method is triggered when a package is shipped.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>string</em>) – Relevant information regarding the shipped package.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_action_server_ros_iot_bridge.main">
+<code class="sig-prename descclassname"><span class="pre">node_action_server_ros_iot_bridge.</span></code><code class="sig-name descname"><span class="pre">main</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main Function</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="node_action_server_ros_iot_bridge.on_cancel">
+<code class="sig-prename descclassname"><span class="pre">node_action_server_ros_iot_bridge.</span></code><code class="sig-name descname"><span class="pre">on_cancel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_handle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#node_action_server_ros_iot_bridge.on_cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Goal Canceling Function</p>
+<p>This function will be called when Goal Cancel request is send to the Action Server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>goal_handle</strong> (<em>object</em>) – Goal handler for the incoming goal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Sravanth, Sravya, Snehita, Aakanksha.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
