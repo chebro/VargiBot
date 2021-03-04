@@ -1,0 +1,17 @@
+# IoT Configuration
+config_iot:
+  mqtt_unique_id: "CeAhsAGA"
+  mqtt:
+    server_url: "broker.mqttdashboard.com"
+    server_port: 1883
+    sub_cb_ros_topic: "/topic_incoming_orders"
+    incoming_orders: "/eyrc/vb/CeAhsAGA/orders"
+    qos: 0
+  google_apps:
+    spread_sheet_id: "AKfycbxzsgHgL5jaILoWdWIJuqrkUqmM-bkLQINWqemw6j3AW7ibDJJKoUIFmg"
+    submission_spreadsheet_id: "AKfycbw5xylppoda-8HPjt2Tzq4ShU_Xef-Ik-hEtBPcPk0gdGw8095j4RZ7"
+  http:
+    inventory: "topic_inventory_data"
+    dispatch: "topic_dispatch_data"
+    shipped: "topic_shipped_data"
+    
